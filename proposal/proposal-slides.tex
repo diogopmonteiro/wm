@@ -1,0 +1,52 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+	\begin{frame}
+		\title{Digital Watermarking for Copyright Owners}
+	\author{
+	    Diogo Monteiro - 76350 \texttt{diogo.p.monteiro@tecnico.ulisboa.pt} \\
+	    João Santos - 76363 \texttt{joao.nuno.santos@tecnico.ulisboa.pt} \\
+	    Pedro Reganha - 76489 \texttt{pedro.reganha@tecnico.ulisboa.pt} \\
+	}
+	\date{Group 4}
+		\maketitle
+	\end{frame}
+  \begin{frame}
+    \frametitle{Goals}
+    \begin{itemize}
+    	\item Tool that allows copyright owners to sign and protect their artwork using digital watermarks.
+    	\item Identify the owner of a copyrighted artwork.
+    	\item Watermarks resistent to blurring, gaussian noise, lossy compression and other attacks.
+    \end{itemize}
+  \end{frame}
+  \begin{frame}
+    \frametitle{Checkpoint and final delivery}
+    For the checkpoint, our goal is:
+
+    \begin{itemize}
+        \item implement a framework so that adding new algorithms is an easy task;
+        \item Cox algorithm;
+        \item Discrete Wavelet Transform based algorithm.
+    \end{itemize}
+    
+For the final delivery, we expect:
+    \begin{itemize}
+        \item everything proposed in the checkpoint;
+        \item algorithm capable of image recovery.
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}
+  \frametitle{Project evaluation}
+  	Using a set of images with different resolutions (low, medium, high) the evaluation process is: 
+    \begin{enumerate}
+        \item apply digital watermarks with every algorithm we have implemented;
+        \item simulate the attacks: resampling, JPEG compression, rotation, noise, cropping, low and high pass filters, blur;
+        \item extract the watermarks from the tampered artwork;
+        \item compare the watermarks;
+        \item recover the original image (if the algorithm supports it).
+    \end{enumerate}
+  \end{frame}
+% etc
+\end{document}
