@@ -20,7 +20,12 @@ def push():
     local('git push origin master')
 
 
+def clean():
+    local('rm -f wm-img/*')
+
+
 def git_all(msg):
-	commit(msg)
-	pull_r()
-	push()
+    clean()
+    commit(msg)
+    pull_r()
+    push()
