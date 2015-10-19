@@ -4,7 +4,7 @@ from PIL import Image
 import numpy
 
 '''
-    python wm.py --extract cox image.file
+    python wm.py --extract cox image.file watermark-file
     python wm.py --embed cox image.file
 '''
 
