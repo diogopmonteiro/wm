@@ -1,8 +1,7 @@
 from unittest import TestCase
+
 import numpy
-from algs.utils import TwoDimensionalDCT
-
-
+from core.algs.utils import TwoDimensionalDCT
 
 '''
 Tests derived from http://www.whydomath.org/node/wavlets/dct.html
