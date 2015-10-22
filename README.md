@@ -13,5 +13,5 @@ Setup project
 Run tests
 ---------
 
-python -m unittest tests.test_dct
-python -m unittest <other file where your tests are located>
+* ```python -m unittest tests.test_dct```
+* ```python -m unittest <other file where your tests are located>```
