@@ -21,7 +21,7 @@ def push():
 
 
 def clean():
-    local('rm -f wm-img/*')
+    local('rm -rf wm-img')
 
 
 def git_all(msg):

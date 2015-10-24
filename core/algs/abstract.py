@@ -5,6 +5,8 @@ import numpy
 
 class Algorithm(object):
 
+    WATERMARKED_IMAGES_DIRECTORY = "wm-img"
+
     # Dictionary that relates algorithm names (provided via command line)
     # and the class type where the algorithm is implemented.
     available_algorithms = {
@@ -27,9 +29,16 @@ class Algorithm(object):
         img_obj = Image.open(file)
         return numpy.array(img_obj, dtype=numpy.float)
 
-    def embed(self, image_file, watermark=None):
-        output = 'wm-' + image_file
+    def get_image_output_file(self, image_file):
+        import os
+        _, filename = os.path.split(image_file)
 
+        if not os.path.exists(self.WATERMARKED_IMAGES_DIRECTORY):
+            os.mkdir(self.WATERMARKED_IMAGES_DIRECTORY)
+
+        return os.path.join(self.WATERMARKED_IMAGES_DIRECTORY, filename)
+
+    def embed(self, image_file, watermark=None):
         array = self._open_image(image_file)
 
         changed_image = self.embed_specific(array)
@@ -39,7 +48,7 @@ class Algorithm(object):
         changed_image = changed_image.astype('uint8')
 
         img = Image.fromarray(changed_image)
-        img.save(output)
+        img.save(self.get_image_output_file(image_file))
 
     def extract(self):
         pass
