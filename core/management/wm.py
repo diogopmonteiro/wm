@@ -28,7 +28,10 @@ class Command(object):
             raise WmError("The algorithm \"" + args.algorithm + "\" is not available.")
 
         if not os.path.isfile(args.image_file):
-            raise WmError("The provided image file \"" + args.image_file + "\" is not a file or does not exist")
+            raise WmError("The provided image file \"" + args.image_file + "\" is not a file or does not exist.")
+
+        if args.watermark and not os.path.exists(args.watermark):
+            raise WmError("The provided watermark file \"" + args.watermark + "\" is not a file or does not exist.")
 
         action = "embed" if args.embed else "extract"
         return action, Algorithm.get_instance(args.algorithm), args.image_file, args.watermark
