@@ -10,7 +10,7 @@ class WmError(BaseException):
 class Command(object):
 
     @classmethod
-    def validate_arguments(cls, *args):
+    def validate_arguments(cls):
         parser = argparse.ArgumentParser()
         group = parser.add_mutually_exclusive_group()
         group.add_argument("-e", "--embed", action="store_true", help="embed a watermark into an image")
@@ -20,22 +20,22 @@ class Command(object):
                             help="the algorithm used for the embedding or extraction.")
 
         parser.add_argument("image_file", help="absolute or relative path to the image file to put a watermark on.")
-        parser.add_argument("watermark", help="path to the watermark file")
+        parser.add_argument("watermark", nargs="?", default=None, help="path to the watermark file")
 
         args = parser.parse_args()
 
         if not Algorithm.is_algorithm_available(args.algorithm):
-            raise WmError("The algorithm " + args.algorithm + " is not available.")
+            raise WmError("The algorithm \"" + args.algorithm + "\" is not available.")
 
         if not os.path.isfile(args.image_file):
-            raise WmError("The provided image file " + args.image_file + " is not a file or does not exist")
+            raise WmError("The provided image file \"" + args.image_file + "\" is not a file or does not exist")
 
         action = "embed" if args.embed else "extract"
         return action, Algorithm.get_instance(args.algorithm), args.image_file, args.watermark
 
     @classmethod
-    def execute(cls, *args):
-        action, algorithm, image_file, watermark = cls.validate_arguments(*args)
+    def execute(cls):
+        action, algorithm, image_file, watermark = cls.validate_arguments()
         method = getattr(algorithm, action)
         method(image_file)
 
@@ -53,8 +53,7 @@ class bcolors:
 
 def execute_command():
     try:
-        import sys
-        Command.execute(*sys.argv[1:])
+        Command.execute()
     except WmError as w:
         print bcolors.FAIL + bcolors.BOLD + "WmError: " + bcolors.ENDC + bcolors.BOLD + w.message + bcolors.ENDC
 
