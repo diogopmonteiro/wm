@@ -1,5 +1,6 @@
 from core.algs.abstract import *
 import os
+import argparse
 
 
 class WmError(BaseException):
@@ -8,33 +9,33 @@ class WmError(BaseException):
 
 class Command(object):
 
-    actions = {
-        '--embed': 'embed',
-        '--extract': 'extract'
-    }
-
     @classmethod
     def validate_arguments(cls, *args):
-        if len(args) < 3:
-            raise WmError("Incorrect args length.")
+        parser = argparse.ArgumentParser()
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument("-e", "--embed", action="store_true", help="embed a watermark into an image")
+        group.add_argument("-x", "--extract", action="store_true", help="extract a watermark from an image")
 
-        action = args[0]
-        if action not in cls.actions.keys():
-            raise WmError("The action " + action + " is not available.")
+        parser.add_argument("-a", "--algorithm", required=True,
+                            help="the algorithm used for the embedding or extraction.")
 
-        algorithm = args[1]
-        if not Algorithm.is_algorithm_available(algorithm):
-            raise WmError("The algorithm " + algorithm + " is not available.")
+        parser.add_argument("image_file", help="absolute or relative path to the image file to put a watermark on.")
+        parser.add_argument("watermark", help="path to the watermark file")
 
-        image_file = args[2]
-        if not os.path.isfile(image_file):
-            raise WmError("The provided image file " + image_file + " is not a file or does not exist")
+        args = parser.parse_args()
 
-        return cls.actions[action], Algorithm.get_instance(algorithm), image_file
+        if not Algorithm.is_algorithm_available(args.algorithm):
+            raise WmError("The algorithm " + args.algorithm + " is not available.")
+
+        if not os.path.isfile(args.image_file):
+            raise WmError("The provided image file " + args.image_file + " is not a file or does not exist")
+
+        action = "embed" if args.embed else "extract"
+        return action, Algorithm.get_instance(args.algorithm), args.image_file, args.watermark
 
     @classmethod
     def execute(cls, *args):
-        action, algorithm, image_file = cls.validate_arguments(*args)
+        action, algorithm, image_file, watermark = cls.validate_arguments(*args)
         method = getattr(algorithm, action)
         method(image_file)
 
