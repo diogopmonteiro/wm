@@ -12,7 +12,7 @@ class Command(object):
     @classmethod
     def validate_arguments(cls):
         parser = argparse.ArgumentParser()
-        group = parser.add_mutually_exclusive_group()
+        group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument("-e", "--embed", action="store_true", help="embed a watermark into an image")
         group.add_argument("-x", "--extract", action="store_true", help="extract a watermark from an image")
 
