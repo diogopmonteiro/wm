@@ -16,9 +16,7 @@ class Cox(Algorithm):
         '''
 
         # Compute DCT
-        img = Image.open(image)
-        arrayImage = numpy.array(img)
-        fDct = TwoDimensionalDCT.forward(arrayImage)
+        fDct = TwoDimensionalDCT.forward(image)
         # Sort DCT
         sortedDCTindexes = numpy.argsort(fDct.ravel())[::-1]
         # Get size of watermark
@@ -31,17 +29,13 @@ class Cox(Algorithm):
                 fDct[i][sortedDCTindexes[i]] = fDct[i][sortedDCTindexes[i]] * \
                                                (TwoDimensionalDCT().forward(watermarkImage)[sortedDCTindexes[i]][i])
         else:
-            imgSize = int((img.size[0]*img.size[1])*0.1)
+            imgSize = int(fDct.__len__())
             nbits = numpy.random.normal(127, 255, imgSize)
         # Construct the Watermark
             for i in range(len(nbits)):
                 fDct[i][sortedDCTindexes[i]] = fDct[i][sortedDCTindexes[i]] * nbits[i]
 
         inverse = TwoDimensionalDCT.inverse(fDct)
-        inverse = inverse.clip(0, 255)
-        inverse = inverse.astype('uint8')
-        image = Image.fromarray(inverse)
-
         return image
 
     def extract_specific(self, image, watermark):
