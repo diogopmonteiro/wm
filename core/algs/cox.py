@@ -9,11 +9,12 @@ class Cox(Algorithm):
     mu = 127
     sigma = 255
     alpha = 1 #switch as needed later
+    name = ''
 
     def compare(self, original_watermark, extracted_watermark):
         pass
 
-    def embed_specific(self, image, watermark=None):
+    def embed_specific(self, image, image_file, watermark=None):
         '''
             This doesn't do none, yet.
         '''
@@ -38,8 +39,17 @@ class Cox(Algorithm):
         # Construct the Watermark
             for i in range(len(nbits)):
                 fDct[sortedUnraveled[i][1]] += self.alpha * nbits[i]
+        self.export_image(sortedUnraveled, image_file, watermark)
         inverse = TwoDimensionalDCT.inverse(fDct)
         return inverse
 
     def extract_specific(self, image, watermark):
         pass
+
+    def export_image(self, unraveled_arr, image_file, wm=None):
+        import json
+        dict_save = {}
+        for i in unraveled_arr:
+            dict_save.update({unraveled_arr[1]: unraveled_arr[0]})
+        with open(Algorithm.get_image_output_file(image_file+'_wm.json'), 'w') as fd:
+            json.dump(dict_save, fd)
