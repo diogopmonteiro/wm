@@ -35,25 +35,29 @@ class Cox(Algorithm):
             for i in range(nbits):
                 f_dct[sorted_unraveled[i][1]] = f_dct[sorted_unraveled[i][1]] * \
                                                 (TwoDimensionalDCT().forward(watermark_image)[sorted_dct_indexes[i]][i])
+            self.export_image(sorted_unraveled, image_file, None, watermark)
         else:
             nbits = numpy.random.normal(self.mu, self.sigma, size_dct)
         # Construct the Watermark
             for i in range(len(nbits)):
                 f_dct[sorted_unraveled[i][1]] += self.alpha * nbits[i]
-        self.export_image(sorted_unraveled, image_file, watermark)
+            self.export_image(sorted_unraveled, image_file, nbits, None)
         inverse = TwoDimensionalDCT.inverse(f_dct)
         return inverse
 
     def extract_specific(self, image, watermark):
         pass
 
-    def export_image(self, unraveled_arr, image_file, wm=None):
+    def export_image(self, unraveled_arr, image_file, distribution=None, wm=None):
         import json
         name = image_file[:-4] + '_wm.json'
         dict_save = {}
-        print unraveled_arr
-        for i in range(len(unraveled_arr)):
-            dict_save[str(unraveled_arr[i][1])] = str(unraveled_arr[i][0])
-        print(dict_save)
+        if wm is not None:
+            for i in range(len(unraveled_arr)):
+                dict_save[str(unraveled_arr[i][1])] = str(unraveled_arr[i][0])
+            print(dict_save)
+        else:
+            for i in range(distribution.__len__()):
+                dict_save[str(i) + 'NORMAL'] = str(distribution[i])
         with open(name, 'w+') as fd:
             json.dump(dict_save, fd)
