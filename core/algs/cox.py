@@ -51,7 +51,7 @@ class Cox(Algorithm):
     def export_image(self, unraveled_arr, image_file, distribution):
         filename = os.path.basename(image_file)
         without_extension = os.path.splitext(filename)[0]
-        name = os.path.join(PROJECT_CODE_DIRECTORY, 'img', without_extension + '_wm.json')
+        name = os.path.join(PROJECT_CODE_DIRECTORY, 'wm-img', without_extension + '_wm.json')
         l = []
         for i in range(len(unraveled_arr)):
             entry = dict()
