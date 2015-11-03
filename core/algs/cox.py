@@ -20,12 +20,12 @@ class Cox(Algorithm):
         '''
 
         # Compute DCT
-        fDct = TwoDimensionalDCT.forward(image)
+        f_dct = TwoDimensionalDCT.forward(image)
         # Sort DCT
-        sizeDCT = int(fDct.__len__()*0.1)
-        sortedDCTindexes = fDct.ravel().argsort()[-sizeDCT:]
-        sortedDCTindexes = (numpy.unravel_index(indx, fDct.shape) for indx in sortedDCTindexes)
-        sortedUnraveled = [(fDct[indx], indx) for indx in sortedDCTindexes]
+        size_dct = int(f_dct.__len__()*0.1)
+        sorted_dct_indexes = f_dct.ravel().argsort()[-size_dct:]
+        sorted_dct_indexes = (numpy.unravel_index(indx, f_dct.shape) for indx in sorted_dct_indexes)
+        sorted_unraveled = [(f_dct[indx], indx) for indx in sorted_dct_indexes]
 
         # Get size of watermark
         if watermark is not None:
@@ -33,21 +33,22 @@ class Cox(Algorithm):
             wm_aux = watermark_image.size()
             nbits = wm_aux[0]*wm_aux[1]
             for i in range(nbits):
-                fDct[sortedUnraveled[i][1]] = fDct[sortedUnraveled[i][1]] *(TwoDimensionalDCT().forward(watermarkImage)[sortedDCTindexes[i]][i])
+                f_dct[sorted_unraveled[i][1]] = f_dct[sorted_unraveled[i][1]] * \
+                                                (TwoDimensionalDCT().forward(watermark_image)[sorted_dct_indexes[i]][i])
         else:
-            nbits = numpy.random.normal(self.mu, self.sigma, sizeDCT)
+            nbits = numpy.random.normal(self.mu, self.sigma, size_dct)
         # Construct the Watermark
             for i in range(len(nbits)):
-                fDct[sortedUnraveled[i][1]] += self.alpha * nbits[i]
-        self.export_image(sortedUnraveled, image_file, watermark)
-        inverse = TwoDimensionalDCT.inverse(fDct)
+                f_dct[sorted_unraveled[i][1]] += self.alpha * nbits[i]
+        self.export_image(sorted_unraveled, image_file, watermark)
+        inverse = TwoDimensionalDCT.inverse(f_dct)
         return inverse
 
     def extract_specific(self, image, watermark):
         pass
 
     def export_image(self, unraveled_arr, image_file, wm=None):
-        import json, os
+        import json
         name = image_file[:-4] + '_wm.json'
         dict_save = {}
         print unraveled_arr
