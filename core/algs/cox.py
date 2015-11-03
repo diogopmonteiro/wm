@@ -1,63 +1,58 @@
 from core.algs.abstract import Algorithm
-from PIL import Image
 from core.algs.utils import TwoDimensionalDCT
 import numpy
+from core.settings import PROJECT_CODE_DIRECTORY
 
 
 class Cox(Algorithm):
 
+    INDEX_KEY = "index"
+    ORIGINAL_VALUE_KEY = "original"
+    INSERTED_WATERMARK_VALUE_KEY = "wm"
+
     mu = 127
     sigma = 255
     alpha = 1  # switch as needed later
+    watermark_size_percentage = 0.1
     name = ''
 
     def compare(self, original_watermark, extracted_watermark):
         pass
 
     def embed_specific(self, image, image_file, watermark=None):
-        '''
-            This doesn't do none, yet.
-        '''
-
         # Compute DCT
         f_dct = TwoDimensionalDCT.forward(image)
+
         # Sort DCT
-        size_dct = int(f_dct.__len__()*0.1)
+        size_dct = int(f_dct.__len__()*self.watermark_size_percentage)
         sorted_dct_indexes = f_dct.ravel().argsort()[-size_dct:]
         sorted_dct_indexes = (numpy.unravel_index(indx, f_dct.shape) for indx in sorted_dct_indexes)
         sorted_unraveled = [(f_dct[indx], indx) for indx in sorted_dct_indexes]
 
-        # Get size of watermark
-        if watermark is not None:
-            watermark_image = Image.open(watermark)
-            wm_aux = watermark_image.size()
-            nbits = wm_aux[0]*wm_aux[1]
-            for i in range(nbits):
-                f_dct[sorted_unraveled[i][1]] = f_dct[sorted_unraveled[i][1]] * \
-                                                (TwoDimensionalDCT().forward(watermark_image)[sorted_dct_indexes[i]][i])
-            self.export_image(sorted_unraveled, image_file, None, watermark)
-        else:
-            nbits = numpy.random.normal(self.mu, self.sigma, size_dct)
+        nbits = numpy.random.normal(self.mu, self.sigma, size_dct)
+
         # Construct the Watermark
-            for i in range(len(nbits)):
-                f_dct[sorted_unraveled[i][1]] += self.alpha * nbits[i]
-            self.export_image(sorted_unraveled, image_file, nbits, None)
+        for i in range(len(nbits)):
+            f_dct[sorted_unraveled[i][1]] += self.alpha * nbits[i]
+
+        self.export_image(sorted_unraveled, image_file, nbits)
         inverse = TwoDimensionalDCT.inverse(f_dct)
         return inverse
 
     def extract_specific(self, image, watermark):
         pass
 
-    def export_image(self, unraveled_arr, image_file, distribution=None, wm=None):
-        import json
-        name = image_file[:-4] + '_wm.json'
-        dict_save = {}
-        if wm is not None:
-            for i in range(len(unraveled_arr)):
-                dict_save[str(unraveled_arr[i][1])] = str(unraveled_arr[i][0])
-            print(dict_save)
-        else:
-            for i in range(distribution.__len__()):
-                dict_save[str(i) + 'NORMAL'] = str(distribution[i])
+    def export_image(self, unraveled_arr, image_file, distribution):
+        import json, os
+        filename = os.path.basename(image_file)
+        without_extension = os.path.splitext(filename)[0]
+        name = os.path.join(PROJECT_CODE_DIRECTORY, 'img', without_extension + '_wm.json')
+        l = []
+        for i in range(len(unraveled_arr)):
+            entry = dict()
+            entry[self.INSERTED_WATERMARK_VALUE_KEY] = distribution[i]
+            entry[self.ORIGINAL_VALUE_KEY] = unraveled_arr[i][0]
+            entry[self.INDEX_KEY] = list(unraveled_arr[i][1])  # list to convert to JSON
+            l.append(entry)
         with open(name, 'w+') as fd:
-            json.dump(dict_save, fd)
+            json.dump(l, fd)
