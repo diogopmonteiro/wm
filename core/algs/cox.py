@@ -8,7 +8,7 @@ class Cox(Algorithm):
 
     mu = 127
     sigma = 255
-    alpha = 1 #switch as needed later
+    alpha = 1  # switch as needed later
     name = ''
 
     def compare(self, original_watermark, extracted_watermark):
@@ -28,10 +28,10 @@ class Cox(Algorithm):
         sortedUnraveled = [(fDct[indx], indx) for indx in sortedDCTindexes]
 
         # Get size of watermark
-        if(watermark!=None):
-            watermarkImage = Image.open(watermark)
-            wmAux = watermarkImage.size()
-            nbits = wmAux[0]*wmAux[1]
+        if watermark is not None:
+            watermark_image = Image.open(watermark)
+            wm_aux = watermark_image.size()
+            nbits = wm_aux[0]*wm_aux[1]
             for i in range(nbits):
                 fDct[sortedUnraveled[i][1]] = fDct[sortedUnraveled[i][1]] *(TwoDimensionalDCT().forward(watermarkImage)[sortedDCTindexes[i]][i])
         else:
@@ -47,9 +47,12 @@ class Cox(Algorithm):
         pass
 
     def export_image(self, unraveled_arr, image_file, wm=None):
-        import json
+        import json, os
+        name = image_file[:-4] + '_wm.json'
         dict_save = {}
-        for i in unraveled_arr:
-            dict_save.update({unraveled_arr[1]: unraveled_arr[0]})
-        with open(Algorithm.get_image_output_file(image_file+'_wm.json'), 'w') as fd:
+        print unraveled_arr
+        for i in range(len(unraveled_arr)):
+            dict_save[str(unraveled_arr[i][1])] = str(unraveled_arr[i][0])
+        print(dict_save)
+        with open(name, 'w+') as fd:
             json.dump(dict_save, fd)

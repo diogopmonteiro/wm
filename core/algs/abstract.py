@@ -41,7 +41,7 @@ class Algorithm(object):
     def embed(self, image_file, watermark=None):
         array = self._open_image(image_file)
 
-        changed_image = self.embed_specific(array)
+        changed_image = self.embed_specific(array, image_file, watermark)
 
         # color values range from 0 and 255 and must be integer
         changed_image = changed_image.clip(0, 255)
@@ -53,7 +53,7 @@ class Algorithm(object):
     def extract(self):
         pass
 
-    def embed_specific(self, image, watermark=None):
+    def embed_specific(self, image, image_file, watermark=None):
         raise NotImplementedError("You must subclass this and implement the embed mechanism per algorithm")
 
     def extract_specific(self, image, watermark):
