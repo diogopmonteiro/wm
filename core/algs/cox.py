@@ -2,6 +2,8 @@ from core.algs.abstract import Algorithm
 from core.algs.utils import TwoDimensionalDCT
 import numpy
 from core.settings import PROJECT_CODE_DIRECTORY
+import json
+import os
 
 
 class Cox(Algorithm):
@@ -42,8 +44,11 @@ class Cox(Algorithm):
     def extract_specific(self, image, watermark):
         pass
 
+    def load_watermark(self, watermark_file):
+        with open(watermark_file, 'r') as fd:
+            return json.loads(fd.read())
+
     def export_image(self, unraveled_arr, image_file, distribution):
-        import json, os
         filename = os.path.basename(image_file)
         without_extension = os.path.splitext(filename)[0]
         name = os.path.join(PROJECT_CODE_DIRECTORY, 'img', without_extension + '_wm.json')
