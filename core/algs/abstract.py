@@ -15,6 +15,7 @@ class Algorithm(object):
         'cox1': 'core.algs.cox1.Cox',
         'cox2': 'core.algs.cox2.Cox',
         'cox3': 'core.algs.cox3.Cox',
+        'dwt':  'core.algs.dwt.DWT',
         'etc': None
     }
 
