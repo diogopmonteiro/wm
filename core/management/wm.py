@@ -40,7 +40,7 @@ class Command(object):
     def execute(cls):
         action, algorithm, image_file, watermark = cls.validate_arguments()
         method = getattr(algorithm, action)
-        method(image_file)
+        method(image_file, watermark)
 
 
 class bcolors:

@@ -4,6 +4,7 @@ import numpy
 from core.settings import PROJECT_CODE_DIRECTORY
 import json
 import os
+import math
 
 
 class Cox(Algorithm):
@@ -42,7 +43,32 @@ class Cox(Algorithm):
         return inverse
 
     def extract_specific(self, image, watermark):
-        pass
+        f_dct = TwoDimensionalDCT.forward(image)
+        w = self.load_watermark(watermark)
+
+        xi = []
+        xo = []
+
+        for entry in w:
+            xo.append( entry[self.INSERTED_WATERMARK_VALUE_KEY] )
+            xi.append( ( entry[self.ORIGINAL_VALUE_KEY] - f_dct[tuple(entry[self.INDEX_KEY])]) /\
+                       (self.alpha))
+
+        print (self.calculate_gamma(xi, xo))
+
+    def calculate_gamma(self, w, o):
+        top = 0
+        bw = 0
+        bo = 0
+        for i in range(len(w)):
+            top += w[i]*o[i]
+            bw += w[i]*w[i]
+            bo += o[i] * o[i]
+
+        return (top)/(math.sqrt(bw)*math.sqrt(bo))
+
+
+
 
     def load_watermark(self, watermark_file):
         with open(watermark_file, 'r') as fd:

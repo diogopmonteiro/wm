@@ -50,8 +50,10 @@ class Algorithm(object):
         img = Image.fromarray(changed_image)
         img.save(self.get_image_output_file(image_file))
 
-    def extract(self):
-        pass
+    def extract(self, image_file, watermark):
+        array = self._open_image(image_file)
+
+        self.extract_specific(array, watermark)
 
     def embed_specific(self, image, image_file, watermark=None):
         raise NotImplementedError("You must subclass this and implement the embed mechanism per algorithm")
