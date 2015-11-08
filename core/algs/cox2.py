@@ -5,6 +5,10 @@ import numpy
 
 class Cox(Cox):
 
+    mu = 0
+    sigma = 1
+    alpha = 1
+
     def embed_specific(self, image, image_file, watermark=None):
         # Compute DCT
         f_dct = TwoDimensionalDCT.forward(image)
