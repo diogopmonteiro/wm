@@ -11,7 +11,10 @@ class Algorithm(object):
     # Dictionary that relates algorithm names (provided via command line)
     # and the class type where the algorithm is implemented.
     available_algorithms = {
-        'cox': 'core.algs.cox.Cox',
+        'cox': 'core.algs.cox1.Cox',
+        'cox1': 'core.algs.cox1.Cox',
+        'cox2': 'core.algs.cox2.Cox',
+        'cox3': 'core.algs.cox3.Cox',
         'etc': None
     }
 
