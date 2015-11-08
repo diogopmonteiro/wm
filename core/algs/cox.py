@@ -51,7 +51,7 @@ class Cox(Algorithm):
 
         for entry in w:
             xo.append( entry[self.INSERTED_WATERMARK_VALUE_KEY] )
-            xi.append( ( entry[self.ORIGINAL_VALUE_KEY] - f_dct[tuple(entry[self.INDEX_KEY])]) /\
+            xi.append( (f_dct[tuple(entry[self.INDEX_KEY])] - entry[self.ORIGINAL_VALUE_KEY]) /\
                        (self.alpha))
 
         print (self.calculate_gamma(xi, xo))
