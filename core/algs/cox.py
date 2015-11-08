@@ -50,9 +50,8 @@ class Cox(Algorithm):
         xo = []
 
         for entry in w:
-            xo.append( entry[self.INSERTED_WATERMARK_VALUE_KEY] )
-            xi.append( (f_dct[tuple(entry[self.INDEX_KEY])] - entry[self.ORIGINAL_VALUE_KEY]) /\
-                       (self.alpha))
+            xo.append(entry[self.INSERTED_WATERMARK_VALUE_KEY])
+            xi.append((f_dct[tuple(entry[self.INDEX_KEY])] - entry[self.ORIGINAL_VALUE_KEY]) / self.alpha)
 
         print (self.calculate_gamma(xi, xo))
 
@@ -66,9 +65,6 @@ class Cox(Algorithm):
             bo += o[i] * o[i]
 
         return (top)/(math.sqrt(bw)*math.sqrt(bo))
-
-
-
 
     def load_watermark(self, watermark_file):
         with open(watermark_file, 'r') as fd:
