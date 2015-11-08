@@ -1,6 +1,7 @@
 from pydoc import locate
 from PIL import Image
 import numpy
+import os
 
 
 class Algorithm(object):
@@ -30,15 +31,14 @@ class Algorithm(object):
         return numpy.array(img_obj, dtype=numpy.float)
 
     def get_image_output_file(self, image_file):
-        import os
         _, filename = os.path.split(image_file)
-
-        if not os.path.exists(self.WATERMARKED_IMAGES_DIRECTORY):
-            os.mkdir(self.WATERMARKED_IMAGES_DIRECTORY)
 
         return os.path.join(self.WATERMARKED_IMAGES_DIRECTORY, filename)
 
     def embed(self, image_file, watermark=None):
+        if not os.path.exists(self.WATERMARKED_IMAGES_DIRECTORY):
+            os.mkdir(self.WATERMARKED_IMAGES_DIRECTORY)
+
         array = self._open_image(image_file)
 
         changed_image = self.embed_specific(array, image_file, watermark)
