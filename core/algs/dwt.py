@@ -87,7 +87,7 @@ class DWT(Algorithm):
 
     def extract_specific(self, image, watermark):
 
-        watermark = self._open_image(watermark)
+        watermark = self.open_image(watermark)
 
         wr = []
         wb = []

@@ -44,7 +44,7 @@ class Algorithm(object):
         array = self.open_image(image_file)
 
         if watermark != None:
-            watermark = self._open_image(watermark)
+            watermark = self.open_image(watermark)
 
         changed_image = self.embed_specific(array, image_file, watermark)
 
@@ -53,7 +53,11 @@ class Algorithm(object):
         changed_image = changed_image.astype('uint8')
 
         img = Image.fromarray(changed_image)
-        print "PSNR: %s" % str(Metrics.psnr(array, changed_image))
+
+        # such a damn workaround
+        print "PSNR: %s" % str(Metrics.psnr(numpy.array(Image.fromarray(changed_image).convert('RGB'), dtype=numpy.float),
+                                            numpy.array(Image.open(image_file).convert('RGB'), dtype=numpy.float)))
+
         img.save(self.get_image_output_file(image_file))
 
     def extract(self, image_file, watermark):
