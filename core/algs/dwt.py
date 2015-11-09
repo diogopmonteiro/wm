@@ -28,6 +28,7 @@ class DWT(Algorithm):
             f_g.append(f_g_col)
 
 
+
         r = []
         b = []
         g = []
@@ -52,11 +53,23 @@ class DWT(Algorithm):
         coeffs_g = wavedec2(g, self.WAVELET, level=3)
         cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g) = coeffs_g
 
+        k = len(f_r)-1
+        y = len(f_r[0])-1
+        for i in range(len(cD1r)):
+            for j in range(len(cD1r)):
+                cD1r[i][j] += f_r[i][j]
+                cD1b[i][j] += f_b[i][j]
+                cD1g[i][j] += f_g[i][j]
+                if j >= y:
+                    break
+            if i >= k:
+                break
 
-        for i in range(len(f_r)):
-            cD1r[i] += f_r_col[i]
-            cD1b[i] += f_b_col[i]
-            cD1g[i] += f_g_col[i]
+        coeffs_r = cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1r)
+        coeffs_b = cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1b)
+        coeffs_g = cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g)
+
+
 
         r = waverec2(coeffs_r, self.WAVELET)
         b = waverec2(coeffs_b, self.WAVELET)
@@ -73,4 +86,77 @@ class DWT(Algorithm):
 
 
     def extract_specific(self, image, watermark):
-        pass
+
+        watermark = self._open_image(watermark)
+
+        wr = []
+        wb = []
+        wg = []
+        for row in watermark:
+            wr_col = []
+            wb_col = []
+            wg_col = []
+            for col in row:
+                wr_col.append(col[0])
+                wb_col.append(col[1])
+                wg_col.append(col[2])
+            wr.append(wr_col)
+            wb.append(wb_col)
+            wg.append(wg_col)
+
+        r = []
+        b = []
+        g = []
+        for row in image:
+            r_col = []
+            b_col = []
+            g_col = []
+            for col in row:
+                r_col.append(col[0])
+                b_col.append(col[1])
+                g_col.append(col[2])
+            r.append(r_col)
+            b.append(b_col)
+            g.append(g_col)
+
+        coeffs_r = wavedec2(r, self.WAVELET, level=3)
+        cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1r) = coeffs_r
+
+        coeffs_b = wavedec2(b, self.WAVELET, level=3)
+        cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1b) = coeffs_b
+
+        coeffs_g = wavedec2(g, self.WAVELET, level=3)
+        cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g) = coeffs_g
+
+        coeffs_wr = wavedec2(wr, self.WAVELET, level=3)
+        cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1wr) = coeffs_wr
+
+        coeffs_wb = wavedec2(wb, self.WAVELET, level=3)
+        cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1wb) = coeffs_wb
+
+        coeffs_wg = wavedec2(wg, self.WAVELET, level=3)
+        cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1wg) = coeffs_wg
+
+        img = []
+        i = 0
+        j = 0
+        line = []
+
+        for row in range(len(cD1b)):
+            for col in range(len(cD1b[0])):
+                line.append([cD1r[row][col]-cD1wr[row][col],
+                             cD1b[row][col]-cD1wb[row][col],
+                             cD1g[row][col]-cD1wg[row][col]])
+                i+=1
+                if i == 100:
+                    i = 0
+                    img.append(line)
+                    line = []
+                    j += 1
+                    if j == 100:
+                        break
+            if j == 100:
+                break
+
+        inverse = TwoDimensionalDCT.inverse(img)
+        return inverse

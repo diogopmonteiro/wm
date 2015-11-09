@@ -60,7 +60,15 @@ class Algorithm(object):
     def extract(self, image_file, watermark):
         array = self._open_image(image_file)
 
-        self.extract_specific(array, watermark)
+        wmark = self.extract_specific(array, watermark)
+
+        if wmark != None:
+            wmark = wmark.clip(0, 255)
+            wmark = wmark.astype('uint8')
+
+            img = Image.fromarray(wmark)
+            _, filename = os.path.split(image_file)
+            img.save(self.get_image_output_file(os.path.join(_,"watermark_"+filename)))
 
     def embed_specific(self, image, image_file, watermark=None):
         raise NotImplementedError("You must subclass this and implement the embed mechanism per algorithm")
