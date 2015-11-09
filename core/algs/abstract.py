@@ -73,7 +73,6 @@ class Algorithm(object):
         array = self.open_image(image_file)
 
         wmark, gamma = self.extract_specific(array, watermark)
-
         if wmark is not None:
             wmark = wmark.clip(0, 255)
             wmark = wmark.astype('uint8')

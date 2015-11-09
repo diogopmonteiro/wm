@@ -1,3 +1,4 @@
+from core.algs.utils import TwoDimensionalDCT
 import numpy
 from core.algs.abstract import Algorithm
 from pywt import dwt2, idwt2
@@ -29,7 +30,21 @@ class DWT(Algorithm):
         return idwt2(cr, self.WAVELET), idwt2(cg, self.WAVELET), idwt2(cb, self.WAVELET)
 
     def embed_specific(self, image, image_file, watermark=None):
-        pass
+        wm = self.open_image(watermark)
+        ir, ig, ib = self.split_image(image)
+
+        dct_wm = TwoDimensionalDCT.forward(wm)
+        dcts_wm = self.split_image(dct_wm)
+
+        dwts_i = self.rgb_to_dwt(ir, ig, ib)
+
+        for i in range(3):
+            dct = dcts_wm[i]
+            ll = dwts_i[i][0]
+            dwts_i[i][0] = [ll[i][j]+dct[i][j] for i in range(len(dct)) for j in range(len(dct[0]))]
+
+        rgb = self.dwt_to_rgb(*dwts_i)
+        return self.join_image(*rgb)
 
     def extract_specific(self, image, watermark):
         wm = self.open_image(watermark)
