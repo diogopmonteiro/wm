@@ -68,6 +68,10 @@ class DWT(Algorithm):
         return self.join_image(dct_r,dct_g, dct_b)
 
 
+    def get_watermark_name(self, filename):
+        pass
+
+
 
 
 
