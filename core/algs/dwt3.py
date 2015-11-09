@@ -1,15 +1,13 @@
 import numpy
 from core.algs.abstract import Algorithm
-<<<<<<< 11eb72185b1839bef1e8abfd260e4dc05a18131a
-from pywt import dwt2
-=======
-from pywt import idwt2
->>>>>>> dwt_to_rgb
+from pywt import dwt2, idwt2
+from core.algs.utils import TwoDimensionalDCT
 
 
 class DWT(Algorithm):
 
     WAVELET = 'haar'
+    alpha = 1
 
     def split_image(self, image):
         return image[:, :, 2], image[:, :, 1], image[:, :, 0]
@@ -34,5 +32,30 @@ class DWT(Algorithm):
         pass
 
     def extract_specific(self, image, watermark):
-        pass
+        wm = self.open_image(watermark)
+
+        RED, GREEN, BLUE = (0,1,2)
+
+        image_rgb = self.split_image(image)
+        wm_rgb = self.split_image(wm)
+
+        image_dwt = list(self.rgb_to_dwt(*image_rgb))
+        wm_dwt = list(self.rgb_to_dwt(*wm_rgb))
+
+        for color in range(3):
+            for i in range(len(image_dwt[0][0])):
+                for j in range(len(image_dwt[0][0][0])):
+                    image_dwt[color][0][i][j] = (wm_dwt[color][0][i][j] - image_dwt[color][0][i][j])/self.alpha
+
+        dct_r = TwoDimensionalDCT.inverse(image_dwt[RED][0])
+        dct_g = TwoDimensionalDCT.inverse(image_dwt[GREEN][0])
+        dct_b = TwoDimensionalDCT.inverse(image_dwt[BLUE][0])
+
+
+        return self.join_image(dct_r,dct_g, dct_b)
+
+
+
+
+
 
