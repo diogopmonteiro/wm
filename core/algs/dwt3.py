@@ -1,4 +1,3 @@
-from core.algs.utils import TwoDimensionalDCT
 import numpy
 from core.algs.abstract import Algorithm
 from pywt import dwt2, idwt2
@@ -26,7 +25,7 @@ class DWT(Algorithm):
     def rgb_to_dwt(self, r, g, b):
         return dwt2(r, self.WAVELET), dwt2(g, self.WAVELET), dwt2(b, self.WAVELET)
 
-    def dwt_ro_rgb(self, cr, cg, cb):
+    def dwt_to_rgb(self, cr, cg, cb):
         return idwt2(cr, self.WAVELET), idwt2(cg, self.WAVELET), idwt2(cb, self.WAVELET)
 
     def embed_specific(self, image, image_file, watermark=None):
@@ -65,7 +64,6 @@ class DWT(Algorithm):
         dct_r = TwoDimensionalDCT.inverse(image_dwt[RED][0])
         dct_g = TwoDimensionalDCT.inverse(image_dwt[GREEN][0])
         dct_b = TwoDimensionalDCT.inverse(image_dwt[BLUE][0])
-
 
         return self.join_image(dct_r,dct_g, dct_b)
 
