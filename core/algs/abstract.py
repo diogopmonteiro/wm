@@ -45,6 +45,9 @@ class Algorithm(object):
 
         array = self._open_image(image_file)
 
+        if watermark != None:
+            watermark = self._open_image(watermark)
+
         changed_image = self.embed_specific(array, image_file, watermark)
 
         # color values range from 0 and 255 and must be integer
