@@ -2,7 +2,7 @@ import random
 import numpy
 from PIL import Image
 from core.algs.abstract import Algorithm
-from core.settings import IMAGE_DIRECTORY
+from core.settings import IMAGE_DIRECTORY, WM_DIRECTORY
 import os
 import time
 from PIL import ImageFilter
@@ -92,7 +92,7 @@ class Benchmarks(object):
         return image.filter(ImageFilter.ModeFilter)
 
     @staticmethod
-    def rotate(image, rotation_degree=2):
+    def rotate(image, rotation_degree=3):
         return image.rotate(rotation_degree)
 
     @staticmethod
@@ -100,7 +100,7 @@ class Benchmarks(object):
         return image.filter(ImageFilter.MedianFilter)
 
     @staticmethod
-    def noise(image, noise_level=10):
+    def noise(image, noise_level=20):
         def noise_map(i):
             noise = random.randint(0, noise_level) - noise_level / 2
             return max(0, min(i + noise, 255))
@@ -114,7 +114,7 @@ class Benchmarks(object):
         return image.filter(ImageFilter.GaussianBlur(radius=5))
 
     @staticmethod
-    def jpeg_compression(image, quality=30):
+    def jpeg_compression(image, quality=10):
         import StringIO
         buffer = StringIO.StringIO()
         image.save(buffer, format="JPEG", quality=quality)
@@ -148,12 +148,17 @@ class Benchmarks(object):
 
     def run(self):
         for image in self.images:
+            path = os.path.join(WM_DIRECTORY, os.path.split(image)[1] + "-benchmarks")
+            if not os.path.exists(path):
+                os.mkdir(path)
+
             start = time.clock()
             iw, psnr = self.algorithm.embed(image)
             t = (time.clock() - start)
             self.results.init_benchmarks(image, t, psnr)
             for attack in self.attack_modifiers:
                 attacked = attack(Image.fromarray(iw))
+                attacked.save(os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
                 start = time.clock()
                 wmark, gamma = self.algorithm.extract_specific(attacked, self.algorithm.get_watermark_name(image))
                 t = (time.clock() - start)
