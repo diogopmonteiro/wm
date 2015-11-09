@@ -309,8 +309,7 @@ class DWT(Algorithm):
 
         # For the original
 
-        self.info.coeffs_r_o = dwt2(self.info.r_matrix_o, self.WAVELET)
-        self.info.cA1r_o, (self.info.cH1r_o, self.info.cV1r_o, self.info.cD1r_o) = self.info.coeffs_r_o
+        self.info.cA1r_o, (self.info.cH1r_o, self.info.cV1r_o, self.info.cD1r_o) = dwt2(self.info.r_matrix_o, self.WAVELET)
 
         self.info.DcH1r_o = TwoDimensionalDCT.forward(self.info.cH1r_o)
         self.info.DcV1r_o = TwoDimensionalDCT.forward(self.info.cV1r_o)
@@ -320,8 +319,7 @@ class DWT(Algorithm):
         self.info.U2r_o, self.info.s2r_o, self.info.SH2_r_o = numpy.linalg.svd(self.info.DcV1r_o)
         self.info.U3r_o, self.info.s3r_o, self.info.SH3_r_o = numpy.linalg.svd(self.info.DcD1r_o)
 
-        self.info.coeffs_g_o = dwt2(self.info.g_matrix_o, self.WAVELET)
-        self.info.cA1g_o, (self.info.cH1g_o, self.info.cV1g_o, self.info.cD1g_o) = self.info.coeffs_g_o
+        self.info.cA1g_o, (self.info.cH1g_o, self.info.cV1g_o, self.info.cD1g_o) = dwt2(self.info.g_matrix_o, self.WAVELET)
 
         self.info.DcH1g_o = TwoDimensionalDCT.forward(self.info.cH1g_o)
         self.info.DcV1g_o = TwoDimensionalDCT.forward(self.info.cV1g_o)
@@ -331,8 +329,7 @@ class DWT(Algorithm):
         self.info.U2g_o, self.info.s2g_o, self.info.SH2_g_o = numpy.linalg.svd(self.info.DcV1g_o)
         self.info.U3g_o, self.info.s3g_o, self.info.SH3_g_o = numpy.linalg.svd(self.info.DcD1g_o)
 
-        self.info.coeffs_b_o = dwt2(self.info.b_matrix_o, self.WAVELET)
-        self.info.cA1b_o, (self.info.cH1b_o, self.info.cV1b_o, self.info.cD1b_o) = self.info.coeffs_b_o
+        self.info.cA1b_o, (self.info.cH1b_o, self.info.cV1b_o, self.info.cD1b_o) = dwt2(self.info.b_matrix_o, self.WAVELET)
 
         self.info.DcH1b_o = TwoDimensionalDCT.forward(self.info.cH1b_o)
         self.info.DcV1b_o = TwoDimensionalDCT.forward(self.info.cV1b_o)
