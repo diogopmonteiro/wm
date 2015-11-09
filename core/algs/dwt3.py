@@ -51,6 +51,9 @@ class DWT(Algorithm):
         wm = self.open_image(watermark)
 
         RED, GREEN, BLUE = (0,1,2)
+        LL, LH, HL, HH = (0, (1,0), (1,1), (1,2))
+
+        W = LL
 
         image_rgb = self.split_image(image)
         wm_rgb = self.split_image(wm)
@@ -59,13 +62,13 @@ class DWT(Algorithm):
         wm_dwt = list(self.rgb_to_dwt(*wm_rgb))
 
         for color in range(3):
-            for i in range(len(image_dwt[0][0])):
-                for j in range(len(image_dwt[0][0][0])):
-                    image_dwt[color][0][i][j] = (wm_dwt[color][0][i][j] - image_dwt[color][0][i][j])/self.alpha
+            for i in range(len(image_dwt[RED][W])):
+                for j in range(len(image_dwt[RED][W][0])):
+                    image_dwt[color][W][i][j] = (wm_dwt[color][W][i][j] - image_dwt[color][W][i][j])/self.alpha
 
-        dct_r = TwoDimensionalDCT.inverse(image_dwt[RED][0])
-        dct_g = TwoDimensionalDCT.inverse(image_dwt[GREEN][0])
-        dct_b = TwoDimensionalDCT.inverse(image_dwt[BLUE][0])
+        dct_r = TwoDimensionalDCT.inverse(image_dwt[RED][W])
+        dct_g = TwoDimensionalDCT.inverse(image_dwt[GREEN][W])
+        dct_b = TwoDimensionalDCT.inverse(image_dwt[BLUE][W])
 
         return self.join_image(dct_r,dct_g, dct_b)
 
