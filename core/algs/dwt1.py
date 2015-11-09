@@ -159,8 +159,6 @@ class DWT(Algorithm):
                 U3g[i][j] += U3gw[i][j]*self.alpha
                 U3b[i][j] += U3bw[i][j]*self.alpha
 
-
-
         R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
         R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
         R3 = numpy.dot(numpy.dot(U3r, numpy.diag(s3r)), SH3_r)
@@ -265,141 +263,124 @@ class DWT(Algorithm):
 
     def extract_specific(self, image, watermark):
 
+        self.info = DWTinfo()
+
         wm = self.open_image(watermark)
 
-        r_matrix, g_matrix, b_matrix = self.start_op(image)
+        self.info.r_matrix, self.info.g_matrix, self.info.b_matrix = self.start_op(image)
 
-        r_matrix_o, g_matrix_o, b_matrix_o = self.start_op(wm)
+        self.info.r_matrix_o, self.info.g_matrix_o, self.info.b_matrix_o = self.start_op(wm)
 
         # For the watermarked
 
-        coeffs_r = dwt2(r_matrix, self.WAVELET)
-        cA1r, (cH1r, cV1r, cD1r) = coeffs_r
+        self.info.coeffs_r = dwt2(self.info.r_matrix, self.WAVELET)
+        self.info.cA1r, (self.info.cH1r, self.info.cV1r, self.info.cD1r) = self.info.coeffs_r
 
-        DcH1r = TwoDimensionalDCT.forward(cH1r)
-        DcV1r = TwoDimensionalDCT.forward(cV1r)
-        DcD1r = TwoDimensionalDCT.forward(cD1r)
+        self.info.DcH1r = TwoDimensionalDCT.forward(self.info.cH1r)
+        self.info.DcV1r = TwoDimensionalDCT.forward(self.info.cV1r)
+        self.info.DcD1r = TwoDimensionalDCT.forward(self.info.cD1r)
 
-        U1r, s1r, SH1_r = numpy.linalg.svd(DcH1r)
-        U2r, s2r, SH2_r = numpy.linalg.svd(DcV1r)
-        U3r, s3r, SH3_r = numpy.linalg.svd(DcD1r)
+        self.info.U1r, self.info.s1r, self.info.SH1_r = numpy.linalg.svd(self.info.DcH1r)
+        self.info.U2r, self.info.s2r, self.info.SH2_r = numpy.linalg.svd(self.info.DcV1r)
+        self.info.U3r, self.info.s3r, self.info.SH3_r = numpy.linalg.svd(self.info.DcD1r)
 
-        coeffs_g = dwt2(g_matrix, self.WAVELET)
-        cA1g, (cH1g, cV1g, cD1g) = coeffs_g
+        self.info.coeffs_g = dwt2(self.info.g_matrix, self.WAVELET)
+        self.info.cA1g, (self.info.cH1g, self.info.cV1g, self.info.cD1g) = self.info.coeffs_g
 
-        DcH1g = TwoDimensionalDCT.forward(cH1g)
-        DcV1g = TwoDimensionalDCT.forward(cV1g)
-        DcD1g = TwoDimensionalDCT.forward(cD1g)
+        self.info.DcH1g = TwoDimensionalDCT.forward(self.info.cH1g)
+        self.info.DcV1g = TwoDimensionalDCT.forward(self.info.cV1g)
+        self.info.DcD1g = TwoDimensionalDCT.forward(self.info.cD1g)
 
-        U1g, s1g, SH1_g = numpy.linalg.svd(DcH1g)
-        U2g, s2g, SH2_g = numpy.linalg.svd(DcV1g)
-        U3g, s3g, SH3_g = numpy.linalg.svd(DcD1g)
+        self.info.U1g, self.info.s1g, self.info.SH1_g = numpy.linalg.svd(self.info.DcH1g)
+        self.info.U2g, self.info.s2g, self.info.SH2_g = numpy.linalg.svd(self.info.DcV1g)
+        self.info.U3g, self.info.s3g, self.info.SH3_g = numpy.linalg.svd(self.info.DcD1g)
 
-        coeffs_b = dwt2(b_matrix, self.WAVELET)
-        cA1b, (cH1b, cV1b, cD1b) = coeffs_b
+        self.info.coeffs_b = dwt2(self.info.b_matrix, self.WAVELET)
+        self.info.cA1b, (self.info.cH1b, self.info.cV1b, self.info.cD1b) = self.info.coeffs_b
 
-        DcH1b = TwoDimensionalDCT.forward(cH1b)
-        DcV1b = TwoDimensionalDCT.forward(cV1b)
-        DcD1b = TwoDimensionalDCT.forward(cD1b)
+        self.info.DcH1b = TwoDimensionalDCT.forward(self.info.cH1b)
+        self.info.DcV1b = TwoDimensionalDCT.forward(self.info.cV1b)
+        self.info.DcD1b = TwoDimensionalDCT.forward(self.info.cD1b)
 
-        U1b, s1b, SH1_b = numpy.linalg.svd(DcH1b)
-        U2b, s2b, SH2_b = numpy.linalg.svd(DcV1b)
-        U3b, s3b, SH3_b = numpy.linalg.svd(DcD1b)
+        self.info.U1b, self.info.s1b, self.info.SH1_b = numpy.linalg.svd(self.info.DcH1b)
+        self.info.U2b, self.info.s2b, self.info.SH2_b = numpy.linalg.svd(self.info.DcV1b)
+        self.info.U3b, self.info.s3b, self.info.SH3_b = numpy.linalg.svd(self.info.DcD1b)
 
 
         # For the original
 
-        coeffs_r_o = dwt2(r_matrix_o, self.WAVELET)
-        cA1r_o, (cH1r_o, cV1r_o, cD1r_o) = coeffs_r_o
+        self.info.coeffs_r_o = dwt2(self.info.r_matrix_o, self.WAVELET)
+        self.info.cA1r_o, (self.info.cH1r_o, self.info.cV1r_o, self.info.cD1r_o) = self.info.coeffs_r_o
 
-        DcH1r_o = TwoDimensionalDCT.forward(cH1r_o)
-        DcV1r_o = TwoDimensionalDCT.forward(cV1r_o)
-        DcD1r_o = TwoDimensionalDCT.forward(cD1r_o)
+        self.info.DcH1r_o = TwoDimensionalDCT.forward(self.info.cH1r_o)
+        self.info.DcV1r_o = TwoDimensionalDCT.forward(self.info.cV1r_o)
+        self.info.DcD1r_o = TwoDimensionalDCT.forward(self.info.cD1r_o)
 
-        U1r_o, s1r_o, SH1_r_o = numpy.linalg.svd(DcH1r_o)
-        U2r_o, s2r_o, SH2_r_o = numpy.linalg.svd(DcV1r_o)
-        U3r_o, s3r_o, SH3_r_o = numpy.linalg.svd(DcD1r_o)
+        self.info.U1r_o, self.info.s1r_o, self.info.SH1_r_o = numpy.linalg.svd(self.info.DcH1r_o)
+        self.info.U2r_o, self.info.s2r_o, self.info.SH2_r_o = numpy.linalg.svd(self.info.DcV1r_o)
+        self.info.U3r_o, self.info.s3r_o, self.info.SH3_r_o = numpy.linalg.svd(self.info.DcD1r_o)
 
-        coeffs_g_o = dwt2(g_matrix_o, self.WAVELET)
-        cA1g_o, (cH1g_o, cV1g_o, cD1g_o) = coeffs_g_o
+        self.info.coeffs_g_o = dwt2(self.info.g_matrix_o, self.WAVELET)
+        self.info.cA1g_o, (self.info.cH1g_o, self.info.cV1g_o, self.info.cD1g_o) = self.info.coeffs_g_o
 
-        DcH1g_o = TwoDimensionalDCT.forward(cH1g_o)
-        DcV1g_o = TwoDimensionalDCT.forward(cV1g_o)
-        DcD1g_o = TwoDimensionalDCT.forward(cD1g_o)
+        self.info.DcH1g_o = TwoDimensionalDCT.forward(self.info.cH1g_o)
+        self.info.DcV1g_o = TwoDimensionalDCT.forward(self.info.cV1g_o)
+        self.info.DcD1g_o = TwoDimensionalDCT.forward(self.info.cD1g_o)
 
-        U1g_o, s1g_o, SH1_g_o = numpy.linalg.svd(DcH1g_o)
-        U2g_o, s2g_o, SH2_g_o = numpy.linalg.svd(DcV1g_o)
-        U3g_o, s3g_o, SH3_g_o = numpy.linalg.svd(DcD1g_o)
+        self.info.U1g_o, self.info.s1g_o, self.info.SH1_g_o = numpy.linalg.svd(self.info.DcH1g_o)
+        self.info.U2g_o, self.info.s2g_o, self.info.SH2_g_o = numpy.linalg.svd(self.info.DcV1g_o)
+        self.info.U3g_o, self.info.s3g_o, self.info.SH3_g_o = numpy.linalg.svd(self.info.DcD1g_o)
 
-        coeffs_b_o = dwt2(b_matrix_o, self.WAVELET)
-        cA1b_o, (cH1b_o, cV1b_o, cD1b_o) = coeffs_b_o
+        self.info.coeffs_b_o = dwt2(self.info.b_matrix_o, self.WAVELET)
+        self.info.cA1b_o, (self.info.cH1b_o, self.info.cV1b_o, self.info.cD1b_o) = self.info.coeffs_b_o
 
-        DcH1b_o = TwoDimensionalDCT.forward(cH1b_o)
-        DcV1b_o = TwoDimensionalDCT.forward(cV1b_o)
-        DcD1b_o = TwoDimensionalDCT.forward(cD1b_o)
+        self.info.DcH1b_o = TwoDimensionalDCT.forward(self.info.cH1b_o)
+        self.info.DcV1b_o = TwoDimensionalDCT.forward(self.info.cV1b_o)
+        self.info.DcD1b_o = TwoDimensionalDCT.forward(self.info.cD1b_o)
 
-        U1b_o, s1b_o, SH1_b_o = numpy.linalg.svd(DcH1b_o)
-        U2b_o, s2b_o, SH2_b_o = numpy.linalg.svd(DcV1b_o)
-        U3b_o, s3b_o, SH3_b_o = numpy.linalg.svd(DcD1b_o)
-
-
+        self.info.U1b_o, self.info.s1b_o, self.info.SH1_b_o = numpy.linalg.svd(self.info.DcH1b_o)
+        self.info.U2b_o, self.info.s2b_o, self.info.SH2_b_o = numpy.linalg.svd(self.info.DcV1b_o)
+        self.info.U3b_o, self.info.s3b_o, self.info.SH3_b_o = numpy.linalg.svd(self.info.DcD1b_o)
 
         # Aleluia
 
-        for i in range(len(SH1_r)):
-            for j in range(len(SH1_r[0])):
-                SH1_r[i][j] = (SH1_r[i][j] - SH1_r_o[i][j]) / self.alpha
-                SH1_g[i][j] = (SH1_g[i][j] - SH1_g_o[i][j]) / self.alpha
-                SH1_b[i][j] = (SH1_b[i][j] - SH1_b_o[i][j]) / self.alpha
-                SH2_r[i][j] = (SH2_r[i][j] - SH2_r_o[i][j]) / self.alpha
-                SH2_g[i][j] = (SH2_g[i][j] - SH2_g_o[i][j]) / self.alpha
-                SH2_b[i][j] = (SH2_b[i][j] - SH2_b_o[i][j]) / self.alpha
-                SH3_r[i][j] = (SH3_r[i][j] - SH3_r_o[i][j]) / self.alpha
-                SH3_g[i][j] = (SH3_g[i][j] - SH3_g_o[i][j]) / self.alpha
-                SH3_b[i][j] = (SH3_b[i][j] - SH3_b_o[i][j]) / self.alpha
+        for i in range(len(self.info.SH1_r)):
+            for j in range(len(self.info.SH1_r[0])):
+                self.info.SH1_r[i][j] = (self.info.SH1_r[i][j] - self.info.SH1_r_o[i][j]) / self.alpha
+                self.info.SH1_g[i][j] = (self.info.SH1_g[i][j] - self.info.SH1_g_o[i][j]) / self.alpha
+                self.info.SH1_b[i][j] = (self.info.SH1_b[i][j] - self.info.SH1_b_o[i][j]) / self.alpha
+                self.info.SH2_r[i][j] = (self.info.SH2_r[i][j] - self.info.SH2_r_o[i][j]) / self.alpha
+                self.info.SH2_g[i][j] = (self.info.SH2_g[i][j] - self.info.SH2_g_o[i][j]) / self.alpha
+                self.info.SH2_b[i][j] = (self.info.SH2_b[i][j] - self.info.SH2_b_o[i][j]) / self.alpha
+                self.info.SH3_r[i][j] = (self.info.SH3_r[i][j] - self.info.SH3_r_o[i][j]) / self.alpha
+                self.info.SH3_g[i][j] = (self.info.SH3_g[i][j] - self.info.SH3_g_o[i][j]) / self.alpha
+                self.info.SH3_b[i][j] = (self.info.SH3_b[i][j] - self.info.SH3_b_o[i][j]) / self.alpha
 
-        R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
-        R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
-        R3 = numpy.dot(numpy.dot(U3r, numpy.diag(s3r)), SH3_r)
+        self.info.ir1 = self.invert_band(self.info.U1r, self.info.s1r, self.info.SH1_r)
+        self.info.ir2 = self.invert_band(self.info.U2r, self.info.s2r, self.info.SH2_r)
+        self.info.ir3 = self.invert_band(self.info.U3r, self.info.s3r, self.info.SH3_r)
 
-        iR1 = TwoDimensionalDCT.inverse(R1)
-        iR2 = TwoDimensionalDCT.inverse(R2)
-        iR3 = TwoDimensionalDCT.inverse(R3)
+        self.info.coeffs_r = self.info.cA1r, (self.info.ir1, self.info.ir2, self.info.ir3)
 
-        coeffs_r = cA1r, (iR1, iR2, iR3)
+        self.info.r = self.info.idwt2(self.info.coeffs_r, self.WAVELET)
 
-        r = idwt2(coeffs_r, self.WAVELET)
+        self.info.ig1 = self.invert_band(self.info.U1g, self.info.s1g, self.info.SH1_g)
+        self.info.ig2 = self.invert_band(self.info.U2g, self.info.s2g, self.info.SH2_g)
+        self.info.ig3 = self.invert_band(self.info.U3g, self.info.s3g, self.info.SH3_g)
 
-        G1 = numpy.dot(numpy.dot(U1g, numpy.diag(s1g)), SH1_g)
-        G2 = numpy.dot(numpy.dot(U2g, numpy.diag(s2g)), SH2_g)
-        G3 = numpy.dot(numpy.dot(U3g, numpy.diag(s3g)), SH3_g)
+        self.info.coeffs_g = self.info.cA1g, (self.info.ig1, self.info.ig2, self.info.ig3)
 
-        iG1 = TwoDimensionalDCT.inverse(G1)
-        iG2 = TwoDimensionalDCT.inverse(G2)
-        iG3 = TwoDimensionalDCT.inverse(G3)
+        self.info.g = idwt2(self.info.coeffs_g, self.WAVELET)
 
-        coeffs_g = cA1g, (iG1, iG2, iG3)
+        self.info.ib1 = self.invert_band(self.info.U1b, self.info.s1b, self.info.SH1_b)
+        self.info.ib2 = self.invert_band(self.info.U2b, self.info.s2b, self.info.SH2_b)
+        self.info.ib3 = self.invert_band(self.info.U3b, self.info.s3b, self.info.SH3_b)
 
-        g = idwt2(coeffs_g, self.WAVELET)
+        self.info.coeffs_b = self.info.cA1b, (self.info.ib1, self.info.ib2, self.info.ib3)
 
-        B1 = numpy.dot(numpy.dot(U1b, numpy.diag(s1b)), SH1_b)
-        B2 = numpy.dot(numpy.dot(U2b, numpy.diag(s2b)), SH2_b)
-        B3 = numpy.dot(numpy.dot(U3b, numpy.diag(s3b)), SH3_b)
+        self.info.b = idwt2(self.info.coeffs_b, self.WAVELET)
 
-        iB1 = TwoDimensionalDCT.inverse(B1)
-        iB2 = TwoDimensionalDCT.inverse(B2)
-        iB3 = TwoDimensionalDCT.inverse(B3)
-
-        coeffs_b = cA1b, (iB1, iB2, iB3)
-
-        b = idwt2(coeffs_b, self.WAVELET)
-
-        final = []
-        for lin in range(len(r)):
-            line = []
-            for col in range(len(r[0])):
-                line.append([b[lin][col], g[lin][col], r[lin][col]])
-            final.append(line)
+        final = self.final_array(self.info.r, self.info.g, self.info.b)
 
         return numpy.array(final), None
 
@@ -422,9 +403,9 @@ class DWT(Algorithm):
             print
 
     def start_op(self, image):
-        r = image[:,:,2]
-        g = image[:,:,1]
-        b = image[:,:,0]
+        r = image[:, :, 2]
+        g = image[:, :, 1]
+        b = image[:, :, 0]
         r_matrix = {}
         g_matrix = {}
         b_matrix = {}
@@ -473,3 +454,22 @@ class DWT(Algorithm):
                 g_matrix_nn = numpy.concatenate((g_matrix_nn, g_m), axis=0)
                 b_matrix_nn = numpy.concatenate((b_matrix_nn, b_m), axis=0)
         return r_matrix_nn, g_matrix_nn, b_matrix_nn
+
+    def final_array(self, arr_r, arr_g, arr_b):
+        result_array = []
+        for lin in range(len(arr_r)):
+            line = []
+            for col in range(len(arr_r[0])):
+                line.append([arr_b[lin][col], arr_g[lin][col], arr_r[lin][col]])
+            result_array.append(line)
+        return result_array
+
+    def invert_band(self, u_att, s_att, sh_att):
+        not_inverse = numpy.dot(numpy.dot(u_att, numpy.diag(s_att)), sh_att)
+        return TwoDimensionalDCT.inverse(not_inverse)
+
+
+class DWTinfo:
+
+    def __init__(self):
+        pass
