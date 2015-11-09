@@ -12,7 +12,7 @@ class Algorithm(object):
     # Dictionary that relates algorithm names (provided via command line)
     # and the class type where the algorithm is implemented.
     available_algorithms = {
-        'dwt':  'core.algs.dwt1.DWT',
+        'dwt':  'core.algs.dwt2.DWT',
         'cox': 'core.algs.cox.Cox',
         'dummy': 'core.algs.abstract.Dummy'
     }

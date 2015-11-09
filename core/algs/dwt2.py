@@ -10,7 +10,7 @@ class DWT(Algorithm):
 
     WAVELET = 'db1'
     N = 4
-    alpha = 1
+    alpha = 0.3
 
     def embed_specific(self, image, image_file, watermark=None):
         r = image[:,:,2]
@@ -68,35 +68,25 @@ class DWT(Algorithm):
         coeffs_r = dwt2(r_matrix_nn, self.WAVELET)
         cA1r, (cH1r, cV1r, cD1r) = coeffs_r
 
-        DcH1r = TwoDimensionalDCT.forward(cH1r)
-        DcV1r = TwoDimensionalDCT.forward(cV1r)
-        DcD1r = TwoDimensionalDCT.forward(cD1r)
-
-        U1r, s1r, SH1_r = numpy.linalg.svd(DcH1r)
-        U2r, s2r, SH2_r = numpy.linalg.svd(DcV1r)
-        U3r, s3r, SH3_r = numpy.linalg.svd(DcD1r)
+        SH1_r = TwoDimensionalDCT.forward(cH1r)
+        SH2_r = TwoDimensionalDCT.forward(cV1r)
+        SH3_r = TwoDimensionalDCT.forward(cD1r)
 
         coeffs_g = dwt2(g_matrix_nn, self.WAVELET)
         cA1g, (cH1g, cV1g, cD1g) = coeffs_g
 
-        DcH1g = TwoDimensionalDCT.forward(cH1g)
-        DcV1g = TwoDimensionalDCT.forward(cV1g)
-        DcD1g = TwoDimensionalDCT.forward(cD1g)
+        SH1_g = TwoDimensionalDCT.forward(cH1g)
+        SH2_g = TwoDimensionalDCT.forward(cV1g)
+        SH3_g = TwoDimensionalDCT.forward(cD1g)
 
-        U1g, s1g, SH1_g = numpy.linalg.svd(DcH1g)
-        U2g, s2g, SH2_g = numpy.linalg.svd(DcV1g)
-        U3g, s3g, SH3_g = numpy.linalg.svd(DcD1g)
 
         coeffs_b = dwt2(b_matrix_nn, self.WAVELET)
         cA1b, (cH1b, cV1b, cD1b) = coeffs_b
 
-        DcH1b = TwoDimensionalDCT.forward(cH1b)
-        DcV1b = TwoDimensionalDCT.forward(cV1b)
-        DcD1b = TwoDimensionalDCT.forward(cD1b)
+        SH1_b = TwoDimensionalDCT.forward(cH1b)
+        SH2_b = TwoDimensionalDCT.forward(cV1b)
+        SH3_b = TwoDimensionalDCT.forward(cD1b)
 
-        U1b, s1b, SH1_b = numpy.linalg.svd(DcH1b)
-        U2b, s2b, SH2_b = numpy.linalg.svd(DcV1b)
-        U3b, s3b, SH3_b = numpy.linalg.svd(DcD1b)
 
         rw = watermark[:,:,2]
         gw = watermark[:,:,1]
@@ -105,35 +95,26 @@ class DWT(Algorithm):
         coeffs_rw = dwt2(rw, self.WAVELET)
         cA1rw, (cH1rw, cV1rw, cD1rw) = coeffs_rw
 
-        DcH1rw = TwoDimensionalDCT.forward(cH1rw)
-        DcV1rw = TwoDimensionalDCT.forward(cV1rw)
-        DcD1rw = TwoDimensionalDCT.forward(cD1rw)
+        SH1_rw = TwoDimensionalDCT.forward(cH1rw)
+        SH2_rw = TwoDimensionalDCT.forward(cV1rw)
+        SH3_rw = TwoDimensionalDCT.forward(cD1rw)
 
-        U1rw, s1rw, SH1_rw = numpy.linalg.svd(DcH1rw)
-        U2rw, s2rw, SH2_rw = numpy.linalg.svd(DcV1rw)
-        U3rw, s3rw, SH3_rw = numpy.linalg.svd(DcD1rw)
 
         coeffs_gw = dwt2(gw, self.WAVELET)
         cA1gw, (cH1gw, cV1gw, cD1gw) = coeffs_gw
 
-        DcH1gw = TwoDimensionalDCT.forward(cH1gw)
-        DcV1gw = TwoDimensionalDCT.forward(cV1gw)
-        DcD1gw = TwoDimensionalDCT.forward(cD1gw)
+        SH1_gw = TwoDimensionalDCT.forward(cH1gw)
+        SH2_gw = TwoDimensionalDCT.forward(cV1gw)
+        SH3_gw = TwoDimensionalDCT.forward(cD1gw)
 
-        U1gw, s1gw, SH1_gw = numpy.linalg.svd(DcH1gw)
-        U2gw, s2gw, SH2_gw = numpy.linalg.svd(DcV1gw)
-        U3gw, s3gw, SH3_gw = numpy.linalg.svd(DcD1gw)
 
         coeffs_bw = dwt2(bw, self.WAVELET)
         cA1bw, (cH1bw, cV1bw, cD1bw) = coeffs_bw
 
-        DcH1bw = TwoDimensionalDCT.forward(cH1bw)
-        DcV1bw = TwoDimensionalDCT.forward(cV1bw)
-        DcD1bw = TwoDimensionalDCT.forward(cD1bw)
+        SH1_bw = TwoDimensionalDCT.forward(cH1bw)
+        SH2_bw = TwoDimensionalDCT.forward(cV1bw)
+        SH3_bw = TwoDimensionalDCT.forward(cD1bw)
 
-        U1bw, s1bw, SH1_bw = numpy.linalg.svd(DcH1bw)
-        U2bw, s2bw, SH2_bw = numpy.linalg.svd(DcV1bw)
-        U3bw, s3bw, SH3_bw = numpy.linalg.svd(DcD1bw)
 
         for i in range(len(SH1_bw)):
             for j in range(len(SH1_bw[0])):
@@ -147,51 +128,27 @@ class DWT(Algorithm):
                 SH3_g[i][j] += SH3_gw[i][j]*self.alpha
                 SH3_b[i][j] += SH3_bw[i][j]*self.alpha
 
-        for i in range(len(U1r)):
-            for j in range(len(U1r[0])):
-                U1r[i][j] += U1rw[i][j]*self.alpha
-                U1g[i][j] += U1gw[i][j]*self.alpha
-                U1b[i][j] += U1bw[i][j]*self.alpha
-                U2r[i][j] += U2rw[i][j]*self.alpha
-                U2g[i][j] += U2gw[i][j]*self.alpha
-                U2b[i][j] += U2bw[i][j]*self.alpha
-                U3r[i][j] += U3rw[i][j]*self.alpha
-                U3g[i][j] += U3gw[i][j]*self.alpha
-                U3b[i][j] += U3bw[i][j]*self.alpha
 
-
-
-        R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
-        R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
-        R3 = numpy.dot(numpy.dot(U3r, numpy.diag(s3r)), SH3_r)
-
-        iR1 = TwoDimensionalDCT.inverse(R1)
-        iR2 = TwoDimensionalDCT.inverse(R2)
-        iR3 = TwoDimensionalDCT.inverse(R3)
+        iR1 = TwoDimensionalDCT.inverse(SH1_r)
+        iR2 = TwoDimensionalDCT.inverse(SH2_r)
+        iR3 = TwoDimensionalDCT.inverse(SH3_r)
 
         coeffs_r = cA1r, (iR1, iR2, iR3)
 
         r = idwt2(coeffs_r, self.WAVELET)
 
-        G1 = numpy.dot(numpy.dot(U1g, numpy.diag(s1g)), SH1_g)
-        G2 = numpy.dot(numpy.dot(U2g, numpy.diag(s2g)), SH2_g)
-        G3 = numpy.dot(numpy.dot(U3g, numpy.diag(s3g)), SH3_g)
 
-        iG1 = TwoDimensionalDCT.inverse(G1)
-        iG2 = TwoDimensionalDCT.inverse(G2)
-        iG3 = TwoDimensionalDCT.inverse(G3)
+        iG1 = TwoDimensionalDCT.inverse(SH1_g)
+        iG2 = TwoDimensionalDCT.inverse(SH2_g)
+        iG3 = TwoDimensionalDCT.inverse(SH3_g)
 
         coeffs_g = cA1g, (iG1, iG2, iG3)
 
         g = idwt2(coeffs_g, self.WAVELET)
 
-        B1 = numpy.dot(numpy.dot(U1b, numpy.diag(s1b)), SH1_b)
-        B2 = numpy.dot(numpy.dot(U2b, numpy.diag(s2b)), SH2_b)
-        B3 = numpy.dot(numpy.dot(U3b, numpy.diag(s3b)), SH3_b)
-
-        iB1 = TwoDimensionalDCT.inverse(B1)
-        iB2 = TwoDimensionalDCT.inverse(B2)
-        iB3 = TwoDimensionalDCT.inverse(B3)
+        iB1 = TwoDimensionalDCT.inverse(SH1_b)
+        iB2 = TwoDimensionalDCT.inverse(SH2_b)
+        iB3 = TwoDimensionalDCT.inverse(SH3_b)
 
         coeffs_b = cA1b, (iB1, iB2, iB3)
 
@@ -276,35 +233,24 @@ class DWT(Algorithm):
         coeffs_r = dwt2(r_matrix, self.WAVELET)
         cA1r, (cH1r, cV1r, cD1r) = coeffs_r
 
-        DcH1r = TwoDimensionalDCT.forward(cH1r)
-        DcV1r = TwoDimensionalDCT.forward(cV1r)
-        DcD1r = TwoDimensionalDCT.forward(cD1r)
-
-        U1r, s1r, SH1_r = numpy.linalg.svd(DcH1r)
-        U2r, s2r, SH2_r = numpy.linalg.svd(DcV1r)
-        U3r, s3r, SH3_r = numpy.linalg.svd(DcD1r)
+        SH1_r = TwoDimensionalDCT.forward(cH1r)
+        SH2_r = TwoDimensionalDCT.forward(cV1r)
+        SH3_r = TwoDimensionalDCT.forward(cD1r)
 
         coeffs_g = dwt2(g_matrix, self.WAVELET)
         cA1g, (cH1g, cV1g, cD1g) = coeffs_g
 
-        DcH1g = TwoDimensionalDCT.forward(cH1g)
-        DcV1g = TwoDimensionalDCT.forward(cV1g)
-        DcD1g = TwoDimensionalDCT.forward(cD1g)
-
-        U1g, s1g, SH1_g = numpy.linalg.svd(DcH1g)
-        U2g, s2g, SH2_g = numpy.linalg.svd(DcV1g)
-        U3g, s3g, SH3_g = numpy.linalg.svd(DcD1g)
+        SH1_g = TwoDimensionalDCT.forward(cH1g)
+        SH2_g = TwoDimensionalDCT.forward(cV1g)
+        SH3_g = TwoDimensionalDCT.forward(cD1g)
 
         coeffs_b = dwt2(b_matrix, self.WAVELET)
         cA1b, (cH1b, cV1b, cD1b) = coeffs_b
 
-        DcH1b = TwoDimensionalDCT.forward(cH1b)
-        DcV1b = TwoDimensionalDCT.forward(cV1b)
-        DcD1b = TwoDimensionalDCT.forward(cD1b)
+        SH1_b = TwoDimensionalDCT.forward(cH1b)
+        SH2_b = TwoDimensionalDCT.forward(cV1b)
+        SH3_b = TwoDimensionalDCT.forward(cD1b)
 
-        U1b, s1b, SH1_b = numpy.linalg.svd(DcH1b)
-        U2b, s2b, SH2_b = numpy.linalg.svd(DcV1b)
-        U3b, s3b, SH3_b = numpy.linalg.svd(DcD1b)
 
 
         # For the original
@@ -312,39 +258,30 @@ class DWT(Algorithm):
         coeffs_r_o = dwt2(r_matrix_o, self.WAVELET)
         cA1r_o, (cH1r_o, cV1r_o, cD1r_o) = coeffs_r_o
 
-        DcH1r_o = TwoDimensionalDCT.forward(cH1r_o)
-        DcV1r_o = TwoDimensionalDCT.forward(cV1r_o)
-        DcD1r_o = TwoDimensionalDCT.forward(cD1r_o)
-
-        U1r_o, s1r_o, SH1_r_o = numpy.linalg.svd(DcH1r_o)
-        U2r_o, s2r_o, SH2_r_o = numpy.linalg.svd(DcV1r_o)
-        U3r_o, s3r_o, SH3_r_o = numpy.linalg.svd(DcD1r_o)
+        SH1_r_o = TwoDimensionalDCT.forward(cH1r_o)
+        SH2_r_o = TwoDimensionalDCT.forward(cV1r_o)
+        SH3_r_o = TwoDimensionalDCT.forward(cD1r_o)
 
         coeffs_g_o = dwt2(g_matrix_o, self.WAVELET)
         cA1g_o, (cH1g_o, cV1g_o, cD1g_o) = coeffs_g_o
 
-        DcH1g_o = TwoDimensionalDCT.forward(cH1g_o)
-        DcV1g_o = TwoDimensionalDCT.forward(cV1g_o)
-        DcD1g_o = TwoDimensionalDCT.forward(cD1g_o)
+        SH1_g_o = TwoDimensionalDCT.forward(cH1g_o)
+        SH2_g_o = TwoDimensionalDCT.forward(cV1g_o)
+        SH3_g_o = TwoDimensionalDCT.forward(cD1g_o)
 
-        U1g_o, s1g_o, SH1_g_o = numpy.linalg.svd(DcH1g_o)
-        U2g_o, s2g_o, SH2_g_o = numpy.linalg.svd(DcV1g_o)
-        U3g_o, s3g_o, SH3_g_o = numpy.linalg.svd(DcD1g_o)
 
         coeffs_b_o = dwt2(b_matrix_o, self.WAVELET)
         cA1b_o, (cH1b_o, cV1b_o, cD1b_o) = coeffs_b_o
 
-        DcH1b_o = TwoDimensionalDCT.forward(cH1b_o)
-        DcV1b_o = TwoDimensionalDCT.forward(cV1b_o)
-        DcD1b_o = TwoDimensionalDCT.forward(cD1b_o)
+        SH1_b_o = TwoDimensionalDCT.forward(cH1b_o)
+        SH2_b_o = TwoDimensionalDCT.forward(cV1b_o)
+        SH3_b_o = TwoDimensionalDCT.forward(cD1b_o)
 
-        U1b_o, s1b_o, SH1_b_o = numpy.linalg.svd(DcH1b_o)
-        U2b_o, s2b_o, SH2_b_o = numpy.linalg.svd(DcV1b_o)
-        U3b_o, s3b_o, SH3_b_o = numpy.linalg.svd(DcD1b_o)
 
 
 
         # Aleluia
+
 
         for i in range(len(SH1_r)):
             for j in range(len(SH1_r[0])):
@@ -358,37 +295,28 @@ class DWT(Algorithm):
                 SH3_g[i][j] = (SH3_g[i][j] - SH3_g_o[i][j]) / self.alpha
                 SH3_b[i][j] = (SH3_b[i][j] - SH3_b_o[i][j]) / self.alpha
 
-        R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
-        R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
-        R3 = numpy.dot(numpy.dot(U3r, numpy.diag(s3r)), SH3_r)
 
-        iR1 = TwoDimensionalDCT.inverse(R1)
-        iR2 = TwoDimensionalDCT.inverse(R2)
-        iR3 = TwoDimensionalDCT.inverse(R3)
+
+        iR1 = TwoDimensionalDCT.inverse(SH1_r)
+        iR2 = TwoDimensionalDCT.inverse(SH2_r)
+        iR3 = TwoDimensionalDCT.inverse(SH3_r)
 
         coeffs_r = cA1r, (iR1, iR2, iR3)
 
         r = idwt2(coeffs_r, self.WAVELET)
 
-        G1 = numpy.dot(numpy.dot(U1g, numpy.diag(s1g)), SH1_g)
-        G2 = numpy.dot(numpy.dot(U2g, numpy.diag(s2g)), SH2_g)
-        G3 = numpy.dot(numpy.dot(U3g, numpy.diag(s3g)), SH3_g)
 
-        iG1 = TwoDimensionalDCT.inverse(G1)
-        iG2 = TwoDimensionalDCT.inverse(G2)
-        iG3 = TwoDimensionalDCT.inverse(G3)
+        iG1 = TwoDimensionalDCT.inverse(SH1_g)
+        iG2 = TwoDimensionalDCT.inverse(SH2_g)
+        iG3 = TwoDimensionalDCT.inverse(SH3_g)
 
         coeffs_g = cA1g, (iG1, iG2, iG3)
 
         g = idwt2(coeffs_g, self.WAVELET)
 
-        B1 = numpy.dot(numpy.dot(U1b, numpy.diag(s1b)), SH1_b)
-        B2 = numpy.dot(numpy.dot(U2b, numpy.diag(s2b)), SH2_b)
-        B3 = numpy.dot(numpy.dot(U3b, numpy.diag(s3b)), SH3_b)
-
-        iB1 = TwoDimensionalDCT.inverse(B1)
-        iB2 = TwoDimensionalDCT.inverse(B2)
-        iB3 = TwoDimensionalDCT.inverse(B3)
+        iB1 = TwoDimensionalDCT.inverse(SH1_b)
+        iB2 = TwoDimensionalDCT.inverse(SH2_b)
+        iB3 = TwoDimensionalDCT.inverse(SH3_b)
 
         coeffs_b = cA1b, (iB1, iB2, iB3)
 
