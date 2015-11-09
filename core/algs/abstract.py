@@ -30,6 +30,7 @@ class Algorithm(object):
 
     def open_image(self, file):
         img_obj = Image.open(file)
+        img_obj = img_obj.convert("RGB")
         return numpy.array(img_obj, dtype=numpy.float)
 
     def get_image_output_file(self, image_file):
@@ -54,29 +55,38 @@ class Algorithm(object):
 
         img = Image.fromarray(changed_image)
 
-        # such a damn workaround
-        print "PSNR: %s" % str(Metrics.psnr(numpy.array(Image.fromarray(changed_image).convert('RGB'), dtype=numpy.float),
-                                            numpy.array(Image.open(image_file).convert('RGB'), dtype=numpy.float)))
-
         img.save(self.get_image_output_file(image_file))
+
+        psnr = Metrics.psnr(numpy.array(Image.fromarray(changed_image).convert('RGB'), dtype=numpy.float),
+                            numpy.array(Image.open(image_file).convert('RGB'), dtype=numpy.float))
+        # such a damn workaround
+
+        print "PSNR %s" % str(psnr)
+
+        return changed_image, psnr
 
     def extract(self, image_file, watermark):
         array = self.open_image(image_file)
 
-        wmark = self.extract_specific(array, watermark)
+        wmark, gamma = self.extract_specific(array, watermark)
 
-        if wmark != None:
+        if wmark is not None:
             wmark = wmark.clip(0, 255)
             wmark = wmark.astype('uint8')
 
             img = Image.fromarray(wmark)
-            _, filename = os.path.split(image_file)
-            img.save(self.get_image_output_file(os.path.join(_,"watermark_"+filename)))
+
+            img.save()
+        print "Gamma %s" % str(gamma)
+        return wmark, gamma
 
     def embed_specific(self, image, image_file, watermark=None):
         raise NotImplementedError("You must subclass this and implement the embed mechanism per algorithm")
 
     def extract_specific(self, image, watermark):
+        raise NotImplementedError("You must subclass this and implement the extract mechanism per algorithm")
+
+    def get_watermark_name(self, filename):
         raise NotImplementedError("You must subclass this and implement the extract mechanism per algorithm")
 
     def get_algorithm_name(self):

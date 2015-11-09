@@ -54,16 +54,14 @@ class Cox(Algorithm):
             xi.append( (f_dct[tuple(entry[self.INDEX_KEY])] - entry[self.ORIGINAL_VALUE_KEY]) /\
                        (self.alpha))
 
-        print "Gamma " + str(Metrics.gamma(xi, xo))
+        return None, Metrics.gamma(xi, xo)
 
     def load_watermark(self, watermark_file):
         with open(watermark_file, 'r') as fd:
             return json.loads(fd.read())
 
     def export_image(self, unraveled_arr, image_file, distribution):
-        filename = os.path.basename(image_file)
-        without_extension = os.path.splitext(filename)[0]
-        name = os.path.join(PROJECT_CODE_DIRECTORY, 'wm-img', without_extension + '_wm.json')
+        name = self.get_watermark_name(image_file)
         l = []
         for i in range(len(unraveled_arr)):
             entry = dict()
@@ -73,3 +71,8 @@ class Cox(Algorithm):
             l.append(entry)
         with open(name, 'w+') as fd:
             json.dump(l, fd)
+
+    def get_watermark_name(self, filename):
+        filename = os.path.basename(filename)
+        without_extension = os.path.splitext(filename)[0]
+        return os.path.join(PROJECT_CODE_DIRECTORY, 'wm-img', without_extension + '_wm.json')

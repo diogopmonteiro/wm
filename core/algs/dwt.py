@@ -159,4 +159,9 @@ class DWT(Algorithm):
                 break
 
         inverse = TwoDimensionalDCT.inverse(img)
-        return inverse
+        return inverse, 0
+
+    def get_watermark_name(self, filename):
+        import os
+        _, filename = os.path.split(filename)
+        return self.get_image_output_file(os.path.join(_, "watermark_" + filename))
