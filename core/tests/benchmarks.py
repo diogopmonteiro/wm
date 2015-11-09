@@ -5,7 +5,7 @@ from core.algs.abstract import Algorithm
 from core.settings import IMAGE_DIRECTORY, WM_DIRECTORY
 import os
 import time
-from PIL import ImageFilter
+from PIL import ImageFilter, ImageEnhance
 from core.management import bcolors
 
 
@@ -84,6 +84,10 @@ class Benchmarks(object):
     DWT_DEFAULT_WM = ""
 
     @staticmethod
+    def add_contrast(image):
+        return ImageEnhance.Contrast(image).enhance(1.2)
+
+    @staticmethod
     def unsharp_mask(image):
         return image.filter(ImageFilter.UnsharpMask)
 
@@ -132,7 +136,8 @@ class Benchmarks(object):
             Benchmarks.rotate,
             Benchmarks.median_filter,
             Benchmarks.mode_filter,
-            Benchmarks.unsharp_mask
+            Benchmarks.unsharp_mask,
+            Benchmarks.add_contrast
         ]
 
         self.images = []
@@ -148,8 +153,13 @@ class Benchmarks(object):
 
     def run(self):
         for image in self.images:
-            path = os.path.join(WM_DIRECTORY, self.algorithm.get_algorithm_name(),
-                                os.path.split(image)[1] + "-benchmarks")
+            if not os.path.exists(WM_DIRECTORY):
+                os.mkdir(WM_DIRECTORY)
+
+            path = os.path.join(WM_DIRECTORY, self.algorithm.get_algorithm_name())
+            if not os.path.exists(path):
+                os.mkdir(path)
+            path = os.path.join(path, os.path.split(image)[1] + "-benchmarks")
             if not os.path.exists(path):
                 os.mkdir(path)
 
