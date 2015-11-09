@@ -1,10 +1,11 @@
 import numpy
 from core.algs.abstract import Algorithm
+from pywt import dwt2
 
 
 class DWT(Algorithm):
 
-    WAVELET = 'db1'
+    WAVELET = 'haar'
 
     def split_image(self, image):
         return image[:, :, 2], image[:, :, 1], image[:, :, 0]
@@ -18,6 +19,9 @@ class DWT(Algorithm):
                     result[i][j][color] = cm[i][j]
             color += 1
         return result
+
+    def rgb_to_dwt(self, r, g, b):
+        return dwt2(r, self.WAVELET), dwt2(g, self.WAVELET), dwt2(b, self.WAVELET)
 
     def embed_specific(self, image, image_file, watermark=None):
         pass
