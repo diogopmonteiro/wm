@@ -75,8 +75,9 @@ class Algorithm(object):
             wmark = wmark.astype('uint8')
 
             img = Image.fromarray(wmark)
+            _, filename = os.path.split(image_file)
 
-            img.save()
+            img.save(self.get_image_output_file(_+"watermark-"+filename))
         print "Gamma %s" % str(gamma)
         return wmark, gamma
 
