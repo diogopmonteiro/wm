@@ -10,10 +10,13 @@ class DWT(Algorithm):
 
     WAVELET = 'db1'
     N = 4
-    alpha = 0.5
+    alpha = 1
 
     def embed_specific(self, image, image_file, watermark=None):
-        r, g, b = image.T
+        r = image[:,:,2]
+        g = image[:,:,1]
+        b = image[:,:,0]
+        #r, g, b = image.T
         r_matrix = {}
         g_matrix = {}
         b_matrix = {}
@@ -95,7 +98,9 @@ class DWT(Algorithm):
         U2b, s2b, SH2_b = numpy.linalg.svd(DcV1b)
         U3b, s3b, SH3_b = numpy.linalg.svd(DcD1b)
 
-        rw, gw, bw = watermark.T
+        rw = watermark[:,:,2]
+        gw = watermark[:,:,1]
+        bw = watermark[:,:,0]
 
         coeffs_rw = dwt2(rw, self.WAVELET)
         cA1rw, (cH1rw, cV1rw, cD1rw) = coeffs_rw
@@ -132,15 +137,15 @@ class DWT(Algorithm):
 
         for i in range(len(SH1_bw)):
             for j in range(len(SH1_bw[0])):
-                SH1_r[i][j] += SH1_rw[i][j]
-                SH1_g[i][j] += SH1_gw[i][j]
-                SH1_b[i][j] += SH1_bw[i][j]
-                SH2_r[i][j] += SH2_rw[i][j]
-                SH2_g[i][j] += SH2_gw[i][j]
-                SH2_b[i][j] += SH2_bw[i][j]
-                SH3_r[i][j] += SH3_rw[i][j]
-                SH3_g[i][j] += SH3_gw[i][j]
-                SH3_b[i][j] += SH3_bw[i][j]
+                SH1_r[i][j] += SH1_rw[i][j]*self.alpha
+                SH1_g[i][j] += SH1_gw[i][j]*self.alpha
+                SH1_b[i][j] += SH1_bw[i][j]*self.alpha
+                SH2_r[i][j] += SH2_rw[i][j]*self.alpha
+                SH2_g[i][j] += SH2_gw[i][j]*self.alpha
+                SH2_b[i][j] += SH2_bw[i][j]*self.alpha
+                SH3_r[i][j] += SH3_rw[i][j]*self.alpha
+                SH3_g[i][j] += SH3_gw[i][j]*self.alpha
+                SH3_b[i][j] += SH3_bw[i][j]*self.alpha
 
         R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
         R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
@@ -239,15 +244,14 @@ class DWT(Algorithm):
         for lin in range(len(r_matrix_nn)):
             line = []
             for col in range(len(r_matrix_nn[0])):
-                line.append([r_matrix_nn[lin][col], g_matrix_nn[lin][col], b_matrix_nn[lin][col]])
+                line.append([b_matrix_nn[lin][col], g_matrix_nn[lin][col], r_matrix_nn[lin][col]])
             final.append(line)
 
-        return numpy.fliplr(numpy.rot90(numpy.array(final), 3))
+        return numpy.array(final)
 
     def extract_specific(self, image, watermark):
-        img_obj = Image.open(watermark)
-        img_obj = img_obj.convert("RGB")
-        wm = numpy.array(img_obj, dtype=numpy.float)
+
+        wm = self.open_image(watermark)
 
         r_matrix, g_matrix, b_matrix = self.start_op(image)
 
@@ -288,40 +292,6 @@ class DWT(Algorithm):
         U2b, s2b, SH2_b = numpy.linalg.svd(DcV1b)
         U3b, s3b, SH3_b = numpy.linalg.svd(DcD1b)
 
-        rw, gw, bw = wm.T
-
-        coeffs_rw = dwt2(rw, self.WAVELET)
-        cA1rw, (cH1rw, cV1rw, cD1rw) = coeffs_rw
-
-        DcH1rw = TwoDimensionalDCT.forward(cH1rw)
-        DcV1rw = TwoDimensionalDCT.forward(cV1rw)
-        DcD1rw = TwoDimensionalDCT.forward(cD1rw)
-
-        U, s, SH1_rw = numpy.linalg.svd(DcH1rw)
-        U, s, SH2_rw = numpy.linalg.svd(DcV1rw)
-        U, s, SH3_rw = numpy.linalg.svd(DcD1rw)
-
-        coeffs_gw = dwt2(gw, self.WAVELET)
-        cA1gw, (cH1gw, cV1gw, cD1gw) = coeffs_gw
-
-        DcH1gw = TwoDimensionalDCT.forward(cH1gw)
-        DcV1gw = TwoDimensionalDCT.forward(cV1gw)
-        DcD1gw = TwoDimensionalDCT.forward(cD1gw)
-
-        U, s, SH1_gw = numpy.linalg.svd(DcH1gw)
-        U, s, SH2_gw = numpy.linalg.svd(DcV1gw)
-        U, s, SH3_gw = numpy.linalg.svd(DcD1gw)
-
-        coeffs_bw = dwt2(bw, self.WAVELET)
-        cA1bw, (cH1bw, cV1bw, cD1bw) = coeffs_bw
-
-        DcH1bw = TwoDimensionalDCT.forward(cH1bw)
-        DcV1bw = TwoDimensionalDCT.forward(cV1bw)
-        DcD1bw = TwoDimensionalDCT.forward(cD1bw)
-
-        U, s, SH1_bw = numpy.linalg.svd(DcH1bw)
-        U, s, SH2_bw = numpy.linalg.svd(DcV1bw)
-        U, s, SH3_bw = numpy.linalg.svd(DcD1bw)
 
         # For the original
 
@@ -358,54 +328,21 @@ class DWT(Algorithm):
         U2b_o, s2b_o, SH2_b_o = numpy.linalg.svd(DcV1b_o)
         U3b_o, s3b_o, SH3_b_o = numpy.linalg.svd(DcD1b_o)
 
-        rw_o, gw_o, bw_o = image.T
 
-        coeffs_rw_o = dwt2(rw_o, self.WAVELET)
-        cA1rw_o, (cH1rw_o, cV1rw_o, cD1rw_o) = coeffs_rw_o
-
-        DcH1rw_o = TwoDimensionalDCT.forward(cH1rw_o)
-        DcV1rw_o = TwoDimensionalDCT.forward(cV1rw_o)
-        DcD1rw_o = TwoDimensionalDCT.forward(cD1rw_o)
-
-        U_o, s_o, SH1_rw_o = numpy.linalg.svd(DcH1rw_o)
-        U_o, s_o, SH2_rw_o = numpy.linalg.svd(DcV1rw_o)
-        U_o, s_o, SH3_rw_o = numpy.linalg.svd(DcD1rw_o)
-
-        coeffs_gw_o = dwt2(gw_o, self.WAVELET)
-        cA1gw_o, (cH1gw_o, cV1gw_o, cD1gw_o) = coeffs_gw_o
-
-        DcH1gw_o = TwoDimensionalDCT.forward(cH1gw_o)
-        DcV1gw_o = TwoDimensionalDCT.forward(cV1gw_o)
-        DcD1gw_o = TwoDimensionalDCT.forward(cD1gw_o)
-
-        U_o, s_o, SH1_gw_o = numpy.linalg.svd(DcH1gw_o)
-        U_o, s_o, SH2_gw_o = numpy.linalg.svd(DcV1gw_o)
-        U_o, s_o, SH3_gw_o = numpy.linalg.svd(DcD1gw_o)
-
-        coeffs_bw_o = dwt2(bw_o, self.WAVELET)
-        cA1bw_o, (cH1bw_o, cV1bw_o, cD1bw_o) = coeffs_bw_o
-
-        DcH1bw_o = TwoDimensionalDCT.forward(cH1bw_o)
-        DcV1bw_o = TwoDimensionalDCT.forward(cV1bw_o)
-        DcD1bw_o = TwoDimensionalDCT.forward(cD1bw_o)
-
-        U_o, s_o, SH1_bw_o = numpy.linalg.svd(DcH1bw_o)
-        U_o, s_o, SH2_bw_o = numpy.linalg.svd(DcV1bw_o)
-        U_o, s_o, SH3_bw_o = numpy.linalg.svd(DcD1bw_o)
 
         # Aleluia
 
-        for i in range(len(SH1_bw)):
-            for j in range(len(SH1_bw[0])):
-                SH1_r[i][j] = (SH1_r[i][j] - SH1_rw_o[i][j]) / self.alpha
-                SH1_g[i][j] = (SH1_g[i][j] - SH1_gw_o[i][j]) / self.alpha
-                SH1_b[i][j] = (SH1_b[i][j] - SH1_bw_o[i][j]) / self.alpha
-                SH2_r[i][j] = (SH2_r[i][j] - SH2_rw_o[i][j]) / self.alpha
-                SH2_g[i][j] = (SH2_g[i][j] - SH2_gw_o[i][j]) / self.alpha
-                SH2_b[i][j] = (SH2_b[i][j] - SH2_bw_o[i][j]) / self.alpha
-                SH3_r[i][j] = (SH3_r[i][j] - SH3_rw_o[i][j]) / self.alpha
-                SH3_g[i][j] = (SH3_g[i][j] - SH3_gw_o[i][j]) / self.alpha
-                SH3_b[i][j] = (SH3_b[i][j] - SH3_bw_o[i][j]) / self.alpha
+        for i in range(len(SH1_r)):
+            for j in range(len(SH1_r[0])):
+                SH1_r[i][j] = (SH1_r[i][j] - SH1_r_o[i][j]) / self.alpha
+                SH1_g[i][j] = (SH1_g[i][j] - SH1_g_o[i][j]) / self.alpha
+                SH1_b[i][j] = (SH1_b[i][j] - SH1_b_o[i][j]) / self.alpha
+                SH2_r[i][j] = (SH2_r[i][j] - SH2_r_o[i][j]) / self.alpha
+                SH2_g[i][j] = (SH2_g[i][j] - SH2_g_o[i][j]) / self.alpha
+                SH2_b[i][j] = (SH2_b[i][j] - SH2_b_o[i][j]) / self.alpha
+                SH3_r[i][j] = (SH3_r[i][j] - SH3_r_o[i][j]) / self.alpha
+                SH3_g[i][j] = (SH3_g[i][j] - SH3_g_o[i][j]) / self.alpha
+                SH3_b[i][j] = (SH3_b[i][j] - SH3_b_o[i][j]) / self.alpha
 
         R1 = numpy.dot(numpy.dot(U1r, numpy.diag(s1r)), SH1_r)
         R2 = numpy.dot(numpy.dot(U2r, numpy.diag(s2r)), SH2_r)
@@ -443,72 +380,14 @@ class DWT(Algorithm):
 
         b = idwt2(coeffs_b, self.WAVELET)
 
-        dd = {}
-        zz = self.zigzag(self.N)
-        for key in zz:
-            x = key[0]
-            y = key[1]
-            dd[self.index_tuple(zz[key], self.N)] = (x*self.N)+y
-
-        r_matrix = {}
-        g_matrix = {}
-        b_matrix = {}
-        k = len(r)/self.N
-        z = len(r[0])/self.N
-        x = 0
-        y = 0
-        for i in range(k, len(r)+1,k):
-            for j in range(z, len(r[0])+1, z):
-                r_matrix[(x, y)] = r[i-k:i, j-z:j]
-                g_matrix[(x, y)] = g[i-k:i, j-z:j]
-                b_matrix[(x, y)] = b[i-k:i, j-z:j]
-                y += 1
-            x += 1
-            y = 0
-
-        rf = {}
-        gf = {}
-        bf = {}
-        for key in r_matrix:
-            rf[key] = r_matrix[self.index_tuple(dd[key], self.N)]
-        for key in g_matrix:
-            gf[key] = g_matrix[self.index_tuple(dd[key], self.N)]
-        for key in b_matrix:
-            bf[key] = b_matrix[self.index_tuple(dd[key], self.N)]
-
-        r_matrix_n = rf
-        g_matrix_n = gf
-        b_matrix_n = bf
-
-        r_matrix_nn = None
-        g_matrix_nn = None
-        b_matrix_nn = None
-
-        for lin in range(self.N):
-            r_m = r_matrix_n[(lin, 0)]
-            g_m = g_matrix_n[(lin, 0)]
-            b_m = b_matrix_n[(lin, 0)]
-            for col in range(1, self.N):
-                r_m = numpy.concatenate((r_m, r_matrix_n[(lin, col)]), axis=1)
-                g_m = numpy.concatenate((g_m, g_matrix_n[(lin, col)]), axis=1)
-                b_m = numpy.concatenate((b_m, b_matrix_n[(lin, col)]), axis=1)
-            if r_matrix_nn is None:
-                r_matrix_nn = r_m
-                g_matrix_nn = g_m
-                b_matrix_nn = b_m
-            else:
-                r_matrix_nn = numpy.concatenate((r_matrix_nn, r_m), axis=0)
-                g_matrix_nn = numpy.concatenate((g_matrix_nn, g_m), axis=0)
-                b_matrix_nn = numpy.concatenate((b_matrix_nn, b_m), axis=0)
-
         final = []
-        for lin in range(len(r_matrix_nn)):
+        for lin in range(len(r)):
             line = []
-            for col in range(len(r_matrix_nn[0])):
-                line.append([r_matrix_nn[lin][col], g_matrix_nn[lin][col], b_matrix_nn[lin][col]])
+            for col in range(len(r[0])):
+                line.append([b[lin][col], g[lin][col], r[lin][col]])
             final.append(line)
 
-        return numpy.fliplr(numpy.rot90(numpy.array(final), 3)), None
+        return numpy.array(final), None
 
     def zigzag(self, n):
         index_order = sorted(((x, y) for x in range(n) for y in range(n)), key=lambda (x, y): (x+y, -y if (x+y) % 2 else y))
@@ -529,7 +408,9 @@ class DWT(Algorithm):
             print
 
     def start_op(self, image):
-        r, g, b = image.T
+        r = image[:,:,2]
+        g = image[:,:,1]
+        b = image[:,:,0]
         r_matrix = {}
         g_matrix = {}
         b_matrix = {}
