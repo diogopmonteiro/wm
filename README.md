@@ -10,8 +10,9 @@ Setup project
 * Run ```pip install -r requirements.txt``` to install project dependencies
 
 
-Run tests
----------
+Run
+---
 
-* ```python -m unittest tests.test_dct```
-* ```python -m unittest <other file where your tests are located>```
+```python run.py embed -a <algorithm> <img-file> <wm-file>```
+```python run.py benchmarks```
+```python run.py tests```
