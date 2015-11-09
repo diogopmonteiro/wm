@@ -148,7 +148,8 @@ class Benchmarks(object):
 
     def run(self):
         for image in self.images:
-            path = os.path.join(WM_DIRECTORY, os.path.split(image)[1] + "-benchmarks")
+            path = os.path.join(WM_DIRECTORY, self.algorithm.get_algorithm_name(),
+                                os.path.split(image)[1] + "-benchmarks")
             if not os.path.exists(path):
                 os.mkdir(path)
 
