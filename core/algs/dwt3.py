@@ -7,7 +7,7 @@ from core.algs.utils import TwoDimensionalDCT
 class DWT(Algorithm):
 
     WAVELET = 'haar'
-    alpha = 1
+    alpha = 0.1
 
     def split_image(self, image):
         return image[:, :, 2], image[:, :, 1], image[:, :, 0]
@@ -29,7 +29,7 @@ class DWT(Algorithm):
         return idwt2(cr, self.WAVELET), idwt2(cg, self.WAVELET), idwt2(cb, self.WAVELET)
 
     def embed_specific(self, image, image_file, watermark=None):
-        wm = self.open_image(watermark)
+        wm = watermark
         ir, ig, ib = self.split_image(image)
 
         dct_wm = TwoDimensionalDCT.forward(wm)
@@ -40,7 +40,9 @@ class DWT(Algorithm):
         for i in range(3):
             dct = dcts_wm[i]
             ll = dwts_i[i][0]
-            dwts_i[i][0] = [ll[i][j]+dct[i][j] for i in range(len(dct)) for j in range(len(dct[0]))]
+            for j in range(len(dct)):
+                for k in range(len(dct[0])):
+                    ll[j][k] += dct[j][k] * self.alpha
 
         rgb = self.dwt_to_rgb(*dwts_i)
         return self.join_image(*rgb)
