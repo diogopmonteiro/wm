@@ -64,4 +64,4 @@ class Metrics(object):
         bottom = math.sqrt(bw)*math.sqrt(bo)
         if bottom == 0:
             return 1
-        return top/bottom
+        return abs(top/bottom)

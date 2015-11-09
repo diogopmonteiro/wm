@@ -2,4 +2,5 @@ Pillow==3.0.0
 PyWavelets==0.3.0
 numpy==1.9.3
 scipy==0.16.0
+tabulate==0.7.5
 wsgiref==0.1.2
