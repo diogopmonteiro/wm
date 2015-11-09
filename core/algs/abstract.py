@@ -1,5 +1,6 @@
 from pydoc import locate
 from PIL import Image
+from core.algs.utils import Metrics
 import numpy
 import os
 
@@ -11,12 +12,9 @@ class Algorithm(object):
     # Dictionary that relates algorithm names (provided via command line)
     # and the class type where the algorithm is implemented.
     available_algorithms = {
-        'cox': 'core.algs.cox1.Cox',
-        'cox1': 'core.algs.cox1.Cox',
-        'cox2': 'core.algs.cox2.Cox',
-        'cox3': 'core.algs.cox3.Cox',
         'dwt':  'core.algs.dwt.DWT',
-        'etc': None
+        'cox': 'core.algs.cox.Cox',
+        'dummy': 'core.algs.abstract.Dummy'
     }
 
     @classmethod
@@ -30,7 +28,7 @@ class Algorithm(object):
         """
         return locate(cls.available_algorithms[s])()
 
-    def _open_image(self, file):
+    def open_image(self, file):
         img_obj = Image.open(file)
         return numpy.array(img_obj, dtype=numpy.float)
 
@@ -43,7 +41,7 @@ class Algorithm(object):
         if not os.path.exists(self.WATERMARKED_IMAGES_DIRECTORY):
             os.mkdir(self.WATERMARKED_IMAGES_DIRECTORY)
 
-        array = self._open_image(image_file)
+        array = self.open_image(image_file)
 
         if watermark != None:
             watermark = self._open_image(watermark)
@@ -55,10 +53,11 @@ class Algorithm(object):
         changed_image = changed_image.astype('uint8')
 
         img = Image.fromarray(changed_image)
+        print "PSNR: %s" % str(Metrics.psnr(array, changed_image))
         img.save(self.get_image_output_file(image_file))
 
     def extract(self, image_file, watermark):
-        array = self._open_image(image_file)
+        array = self.open_image(image_file)
 
         wmark = self.extract_specific(array, watermark)
 
@@ -76,9 +75,16 @@ class Algorithm(object):
     def extract_specific(self, image, watermark):
         raise NotImplementedError("You must subclass this and implement the extract mechanism per algorithm")
 
-    #def compare(self, original_watermark, extracted_watermark):
-    #    raise NotImplementedError("You must subclass this")
+    def get_algorithm_name(self):
+        return self.__class__.__name__
 
+
+class Dummy(Algorithm):
+    def embed_specific(self, image, image_file, watermark=None):
+        return image
+
+    def extract_specific(self, image, watermark):
+        return image
 
 
 
