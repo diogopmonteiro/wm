@@ -3,7 +3,7 @@ from PIL import Image
 from core.algs.utils import Metrics
 import numpy
 import os
-
+import scipy
 
 class Algorithm(object):
 
@@ -30,8 +30,8 @@ class Algorithm(object):
 
     def open_image(self, file):
         img_obj = Image.open(file)
-        img_obj = img_obj.convert("RGB")
-        return numpy.array(img_obj, dtype=numpy.float)
+        #img_obj = img_obj.convert("RGB")
+        return numpy.array(img_obj)
 
     def get_image_output_file(self, image_file):
         _, filename = os.path.split(image_file)
@@ -50,8 +50,12 @@ class Algorithm(object):
         changed_image = self.embed_specific(array, image_file, watermark)
 
         # color values range from 0 and 255 and must be integer
+
+
+
         changed_image = changed_image.clip(0, 255)
         changed_image = changed_image.astype('uint8')
+
 
         img = Image.fromarray(changed_image)
 
@@ -77,7 +81,8 @@ class Algorithm(object):
             img = Image.fromarray(wmark)
             _, filename = os.path.split(image_file)
 
-            img.save(self.get_image_output_file(_+"watermark-"+filename))
+
+            img.save(self.get_image_output_file(_+"watermark-"+filename.split('.')[0]+".png"))
         print "Gamma %s" % str(gamma)
         return wmark, gamma
 
