@@ -124,10 +124,10 @@ class Benchmarks(object):
         image.save(buffer, format="JPEG", quality=quality)
         return Image.open(buffer)
 
-    def __init__(self, algorithm, image):
+    def __init__(self, algorithm, image, watermark_file):
         self.algorithm = Algorithm.get_instance(algorithm)
         self.results = BenchmarkResults(self.algorithm.get_algorithm_name())
-
+        self.watermark_file = watermark_file
         self.attack_modifiers = [
             Benchmarks.no_attack,
             Benchmarks.blur,
@@ -164,7 +164,7 @@ class Benchmarks(object):
                 os.mkdir(path)
 
             start = time.clock()
-            iw, psnr = self.algorithm.embed(image)
+            iw, psnr = self.algorithm.embed(image, self.watermark_file)
             t = (time.clock() - start)
             self.results.init_benchmarks(image, t, psnr)
             for attack in self.attack_modifiers:

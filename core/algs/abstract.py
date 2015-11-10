@@ -30,7 +30,7 @@ class Algorithm(object):
 
     def open_image(self, file):
         img_obj = Image.open(file)
-        #img_obj = img_obj.convert("RGB")
+        img_obj = img_obj.convert("RGB")
         return numpy.array(img_obj)
 
     def get_image_output_file(self, image_file):
@@ -78,10 +78,7 @@ class Algorithm(object):
             wmark = wmark.astype('uint8')
 
             img = Image.fromarray(wmark)
-            _, filename = os.path.split(image_file)
-
-
-            img.save(self.get_image_output_file(_+"watermark-"+filename.split('.')[0]+".png"))
+            img.save(self.get_watermark_name(image_file))
         print "Gamma %s" % str(gamma)
         return wmark, gamma
 

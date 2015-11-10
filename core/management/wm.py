@@ -25,16 +25,19 @@ class Command(object):
         subparsers = parser.add_subparsers(dest="command")
 
         bench = subparsers.add_parser('benchmarks', help="run benchmarks")
-        bench.add_argument("-a", "--algorithm", required=True,
-                            help="the algorithm used for the embedding or extraction.")
-        bench.add_argument("image_file", nargs="?", default=None,
-                           help="absolute or relative path to the image file to put a watermark on.")
+        cls.add_extract_embed_args(bench)
 
         subparsers.add_parser('tests', help="run tests")
         embed = subparsers.add_parser('embed', help="embed a watermark into an image")
         cls.add_extract_embed_args(embed)
         extract = subparsers.add_parser('extract', help="extract a watermark from an image")
         cls.add_extract_embed_args(extract)
+
+        gamma = subparsers.add_parser('gamma', help="compute gamma between two images")
+        gamma.add_argument("file1",
+                           help="file number 1")
+        gamma.add_argument("file2",
+                           help="file number 2")
 
         return parser.parse_args()
 
@@ -46,9 +49,20 @@ class Command(object):
         if command == 'benchmarks':
             if not Algorithm.is_algorithm_available(args.algorithm):
                 raise WmError("The algorithm \"" + args.algorithm + "\" is not available.")
-            Benchmarks(args.algorithm, args.image_file).run()
+            Benchmarks(args.algorithm, args.image_file, args.watermark).run()
         elif command == 'tests':
             pass
+        elif command == 'gamma':
+            if not os.path.isfile(args.file1):
+                raise WmError("The provided image file \"" + args.file1 + "\" is not a file or does not exist.")
+            if not os.path.isfile(args.file2):
+                raise WmError("The provided image file \"" + args.file2 + "\" is not a file or does not exist.")
+
+            img1 = Algorithm().open_image(args.file1)
+            img2 = Algorithm().open_image(args.file2)
+            print Metrics.gamma(numpy.array(img1, dtype=numpy.float64).ravel(),
+                                numpy.array(img2, dtype=numpy.float64).ravel())
+
         elif command == 'embed' or command == 'extract':
             if not Algorithm.is_algorithm_available(args.algorithm):
                 raise WmError("The algorithm \"" + args.algorithm + "\" is not available.")

@@ -1,3 +1,5 @@
+import scipy
+from scipy.stats import stats
 from scipy.fftpack import dct, idct
 import math
 
@@ -47,13 +49,9 @@ class Metrics(object):
 
         return 10 * math.log10(pow(m,2)/math.sqrt(cls.mse(i,iw)))
 
-    @classmethod
-    def gamma(cls, w, o):
-        """
-        :param w: extracted watermark value list
-        :param o: original watermark value list
-        :return: the correlation between the two watermarks
-        """
+        """@classmethod
+        def gamma(cls, w, o):
+
         top = 0
         bw = 0
         bo = 0
@@ -64,4 +62,8 @@ class Metrics(object):
         bottom = math.sqrt(bw)*math.sqrt(bo)
         if bottom == 0:
             return 1
-        return abs(top/bottom)
+        return abs(top/bottom)"""
+
+    @classmethod
+    def gamma(cls, w, o):
+        return stats.pearsonr(w,o)[0]
