@@ -125,6 +125,46 @@ class Benchmarks(object):
         image.save(buffer, format="JPEG", quality=quality)
         return Image.open(buffer)
 
+    @staticmethod
+    def crop_general(image, size):
+        '''
+        Size can be predetermined as a variable % of the picture size
+        '''
+        width, height = image.size
+        left = numpy.ceil((width - width*size)/2)
+        top = numpy.ceil((height - height*size)/2)
+        right = numpy.floor((width + width*size)/2)
+        bottom = numpy.floor((height + height*size)/2)
+
+        image.paste((255, 255, 255), (int(left), int(top), int(right), int(bottom)))
+        return image
+
+    @staticmethod
+    def crop_picture_small(image):
+        return Benchmarks.crop_general(image, 0.05)
+
+    @staticmethod
+    def crop_picture_middle(image):
+        return Benchmarks.crop_general(image, 0.15)
+
+    @staticmethod
+    def crop_picture_big(image):
+        return Benchmarks.crop_general(image, 0.3)
+
+    @staticmethod
+    def size_up_down(image):
+        w_ori, h_ori = image.size
+        w_new, h_new = int(w_ori*1.5), int(h_ori*1.5)
+        im = image.resize((w_new, h_new))
+        return im.resize((w_ori, h_ori))
+
+    @staticmethod
+    def size_down_up(image):
+        w_ori, h_ori = image.size
+        w_new, h_new = int(w_ori*0.75), int(h_ori*0.75)
+        im = image.resize((w_new, h_new))
+        return im.resize((w_ori, h_ori))
+
     def __init__(self, algorithm, image, watermark_file):
         self.algorithm = Algorithm.get_instance(algorithm)
         self.results = BenchmarkResults(self.algorithm.get_algorithm_name())
@@ -138,7 +178,12 @@ class Benchmarks(object):
             Benchmarks.median_filter,
             Benchmarks.mode_filter,
             Benchmarks.unsharp_mask,
-            Benchmarks.add_contrast
+            Benchmarks.add_contrast,
+            Benchmarks.crop_picture_small,
+            Benchmarks.crop_picture_middle,
+            Benchmarks.crop_picture_big,
+            Benchmarks.size_down_up,
+            Benchmarks.size_up_down
         ]
 
         self.images = []
