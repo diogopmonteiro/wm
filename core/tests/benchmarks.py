@@ -1,4 +1,5 @@
 import random
+from core.algs.utils import Metrics
 import numpy
 from PIL import Image
 from core.algs.abstract import Algorithm
@@ -171,7 +172,17 @@ class Benchmarks(object):
                 attacked = attack(Image.fromarray(iw))
                 attacked.save(os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
                 start = time.clock()
-                wmark, gamma = self.algorithm.extract_specific(attacked, self.algorithm.get_watermark_name(image))
+                if self.algorithm.get_algorithm_name() == "Cox":
+                    wmark, gamma = self.algorithm.extract_specific(attacked, self.algorithm.get_watermark_name(image))
+                elif self.algorithm.get_algorithm_name() == "DWT":
+                    wmark, gamma = self.algorithm.extract_specific(numpy.array(Image.open(image)),
+                                                          os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
+                    wmark = wmark.clip(0,255)
+                    wmark = wmark.astype('uint8')
+                    gamma = Metrics.gamma(wmark.ravel(), numpy.array(Image.open(self.watermark_file)).ravel())
+                    wmark = Image.fromarray(wmark)
+                    wmark.save(os.path.join(path, attack.__name__ + "-extracted-wm-" + os.path.split(image)[1]))
+
                 t = (time.clock() - start)
                 self.results.add_attack_result(self.algorithm.get_algorithm_name(), image, attack.__name__, t, gamma)
 

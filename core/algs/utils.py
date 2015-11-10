@@ -49,21 +49,6 @@ class Metrics(object):
 
         return 10 * math.log10(pow(m,2)/math.sqrt(cls.mse(i,iw)))
 
-        """@classmethod
-        def gamma(cls, w, o):
-
-        top = 0
-        bw = 0
-        bo = 0
-        for i in range(len(w)):
-            top += w[i] * o[i]
-            bw += w[i] * w[i]
-            bo += o[i] * o[i]
-        bottom = math.sqrt(bw)*math.sqrt(bo)
-        if bottom == 0:
-            return 1
-        return abs(top/bottom)"""
-
     @classmethod
     def gamma(cls, w, o):
-        return stats.pearsonr(w,o)[0]
+        return abs(stats.pearsonr(w,o)[0])
