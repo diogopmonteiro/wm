@@ -1,167 +1,101 @@
-from abstract import Algorithm
-from core.algs.utils import TwoDimensionalDCT
-from scipy.misc import imread
-from pywt import wavedec2, waverec2
+import os
 import numpy
+from core.algs.abstract import Algorithm
+from pywt import dwt2, idwt2
+from core.algs.utils import TwoDimensionalDCT, Metrics
 
 
 class DWT(Algorithm):
 
-    WAVELET = 'db1'
+    WAVELET = 'haar'
+    alpha = 0.1
+
+    def split_image(self, image):
+        return image[:, :, 2], image[:, :, 1], image[:, :, 0]
+
+    def join_image(self, r, g, b):
+        result = numpy.zeros(r.shape + (3,))
+        color = 0
+        for cm in [b,g,r]:
+            for i in range(r.shape[0]):
+                for j in range(r.shape[1]):
+                    result[i][j][color] = cm[i][j]
+            color += 1
+        return result
+
+    def rgb_to_dwt(self, r, g, b):
+        return dwt2(r, self.WAVELET, mode='sym'), dwt2(g, self.WAVELET, mode='sym'), dwt2(b, self.WAVELET, mode='sym')
+
+    def dwt_to_rgb(self, cr, cg, cb):
+        return idwt2(cr, self.WAVELET, mode='sym'), idwt2(cg, self.WAVELET, mode='sym'), idwt2(cb, self.WAVELET, mode='sym')
+
+    def rgb_to_dct(self, r, g, b):
+        return TwoDimensionalDCT.forward(r), TwoDimensionalDCT.forward(g), TwoDimensionalDCT.forward(b)
+
+    def dct_to_rgb(self, cr, cg, cb):
+        return TwoDimensionalDCT.inverse(cr), TwoDimensionalDCT.inverse(cg), TwoDimensionalDCT.inverse(cb)
 
     def embed_specific(self, image, image_file, watermark=None):
-        f_dct = TwoDimensionalDCT.forward(watermark)
-        f_r = []
-        f_b = []
-        f_g = []
+        wm = watermark
+        ir, ig, ib = self.split_image(image)
 
-        for row in f_dct:
-            f_r_col = []
-            f_b_col = []
-            f_g_col = []
-            for col in row:
-                f_r_col.append(col[0])
-                f_b_col.append(col[1])
-                f_g_col.append(col[2])
-            f_r.append(f_r_col)
-            f_b.append(f_b_col)
-            f_g.append(f_g_col)
+        img = self.split_image(wm)
+        dcts_wm = self.rgb_to_dct(*img)
 
+        dwts_i = self.rgb_to_dwt(ir, ig, ib)
 
+        for color in range(3):
+            dct = dcts_wm[color]
+            hh = TwoDimensionalDCT.forward(dwts_i[color][1][2])
+            for j in range(len(dct)):
+                for k in range(len(dct[0])):
+                    hh[j][k] += dct[j][k] * self.alpha
 
-        r = []
-        b = []
-        g = []
-        for row in image:
-            r_col = []
-            b_col = []
-            g_col = []
-            for col in row:
-                r_col.append(col[0])
-                b_col.append(col[1])
-                g_col.append(col[2])
-            r.append(r_col)
-            b.append(b_col)
-            g.append(g_col)
+            ihh = TwoDimensionalDCT.inverse(hh)
+            hh = dwts_i[color][1][2]
+            for j in range(len(dct)):
+                for k in range(len(dct[0])):
+                    hh[j][k] = ihh[j][k]
 
-        coeffs_r = wavedec2(r, self.WAVELET, level=3)
-        cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1r) = coeffs_r
+        rgb = self.dwt_to_rgb(*dwts_i)
 
-        coeffs_b = wavedec2(b, self.WAVELET, level=3)
-        cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1b) = coeffs_b
-
-        coeffs_g = wavedec2(g, self.WAVELET, level=3)
-        cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g) = coeffs_g
-
-        k = len(f_r)-1
-        y = len(f_r[0])-1
-        for i in range(len(cD1r)):
-            for j in range(len(cD1r)):
-                cD1r[i][j] += f_r[i][j]
-                cD1b[i][j] += f_b[i][j]
-                cD1g[i][j] += f_g[i][j]
-                if j >= y:
-                    break
-            if i >= k:
-                break
-
-        coeffs_r = cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1r)
-        coeffs_b = cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1b)
-        coeffs_g = cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g)
-
-
-
-        r = waverec2(coeffs_r, self.WAVELET)
-        b = waverec2(coeffs_b, self.WAVELET)
-        g = waverec2(coeffs_g, self.WAVELET)
-
-        img = []
-
-        for row in range(len(r)):
-            line = []
-            for col in range(len(r[0])):
-                line.append([r[row][col], b[row][col], g[row][col]])
-            img.append(line)
-        return numpy.array(img)
-
+        img = self.join_image(*rgb)
+        return img
 
     def extract_specific(self, image, watermark):
+        wm = self.open_image(watermark)
 
-        watermark = self.open_image(watermark)
+        RED, GREEN, BLUE = (0,1,2)
+        LL, LH, HL, HH = (0, (1,0), (1,1), (1,2))
 
-        wr = []
-        wb = []
-        wg = []
-        for row in watermark:
-            wr_col = []
-            wb_col = []
-            wg_col = []
-            for col in row:
-                wr_col.append(col[0])
-                wb_col.append(col[1])
-                wg_col.append(col[2])
-            wr.append(wr_col)
-            wb.append(wb_col)
-            wg.append(wg_col)
+        W = HH
 
-        r = []
-        b = []
-        g = []
-        for row in image:
-            r_col = []
-            b_col = []
-            g_col = []
-            for col in row:
-                r_col.append(col[0])
-                b_col.append(col[1])
-                g_col.append(col[2])
-            r.append(r_col)
-            b.append(b_col)
-            g.append(g_col)
+        image_rgb = self.split_image(image)
+        wm_rgb = self.split_image(wm)
 
-        coeffs_r = wavedec2(r, self.WAVELET, level=3)
-        cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1r) = coeffs_r
+        image_dwt = list(self.rgb_to_dwt(*image_rgb))
+        wm_dwt = list(self.rgb_to_dwt(*wm_rgb))
 
-        coeffs_b = wavedec2(b, self.WAVELET, level=3)
-        cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1b) = coeffs_b
 
-        coeffs_g = wavedec2(g, self.WAVELET, level=3)
-        cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1g) = coeffs_g
+        for color in range(3):
+            dct_image_dwt = TwoDimensionalDCT.forward(image_dwt[color][1][2])
+            dct_wm_dwt = TwoDimensionalDCT.forward(wm_dwt[color][1][2])
+            for i in range(len(image_dwt[RED][1][2])):
+                for j in range(len(image_dwt[RED][1][2][0])):
+                    dct_image_dwt[i][j] = (dct_wm_dwt[i][j] - dct_image_dwt[i][j])/self.alpha
 
-        coeffs_wr = wavedec2(wr, self.WAVELET, level=3)
-        cA3r, (cH3r, cV3r, cD3r), (cH2r, cV2r, cD2r), (cH1r, cV1r, cD1wr) = coeffs_wr
+            for i in range(len(image_dwt[RED][1][2])):
+                for j in range(len(image_dwt[RED][1][2][0])):
+                    image_dwt[color][1][2][i][j] = dct_image_dwt[i][j]
 
-        coeffs_wb = wavedec2(wb, self.WAVELET, level=3)
-        cA3b, (cH3b, cV3b, cD3b), (cH2b, cV2b, cD2b), (cH1b, cV1b, cD1wb) = coeffs_wb
-
-        coeffs_wg = wavedec2(wg, self.WAVELET, level=3)
-        cA3g, (cH3g, cV3g, cD3g), (cH2g, cV2g, cD2g), (cH1g, cV1g, cD1wg) = coeffs_wg
-
-        img = []
-        i = 0
-        j = 0
-        line = []
-
-        for row in range(len(cD1b)):
-            for col in range(len(cD1b[0])):
-                line.append([cD1r[row][col]-cD1wr[row][col],
-                             cD1b[row][col]-cD1wb[row][col],
-                             cD1g[row][col]-cD1wg[row][col]])
-                i+=1
-                if i == 100:
-                    i = 0
-                    img.append(line)
-                    line = []
-                    j += 1
-                    if j == 100:
-                        break
-            if j == 100:
-                break
-
-        inverse = TwoDimensionalDCT.inverse(img)
-        return inverse, 0
+        return self.join_image(*self.dct_to_rgb(image_dwt[RED][1][2], image_dwt[GREEN][1][2], image_dwt[BLUE][1][2])), 0
 
     def get_watermark_name(self, filename):
-        import os
         _, filename = os.path.split(filename)
-        return self.get_image_output_file(os.path.join(_, "watermark_" + filename))
+        return self.get_image_output_file(_+"watermark-"+filename.split('.')[0]+".png")
+
+
+
+
+
+
