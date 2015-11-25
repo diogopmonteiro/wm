@@ -1,3 +1,4 @@
+from core.management.wm import WmError
 import os
 import numpy
 from core.algs.abstract import Algorithm
@@ -36,7 +37,16 @@ class DWT(Algorithm):
         return TwoDimensionalDCT.inverse(cr), TwoDimensionalDCT.inverse(cg), TwoDimensionalDCT.inverse(cb)
 
     def embed_specific(self, image, image_file, watermark=None):
+        i_width = image.shape[0]
+        i_height = image.shape[1]
+
         wm = watermark
+        wm_width = wm.shape[0]
+        wm_height = wm.shape[1]
+
+        if not (wm_width == i_width / 2 and wm_height == i_height / 2):
+            raise WmError("Watermark size must be half of image size. For now.")
+
         ir, ig, ib = self.split_image(image)
 
         img = self.split_image(wm)
@@ -66,16 +76,12 @@ class DWT(Algorithm):
         wm = self.open_image(watermark)
 
         RED, GREEN, BLUE = (0,1,2)
-        LL, LH, HL, HH = (0, (1,0), (1,1), (1,2))
-
-        W = HH
 
         image_rgb = self.split_image(image)
         wm_rgb = self.split_image(wm)
 
         image_dwt = list(self.rgb_to_dwt(*image_rgb))
         wm_dwt = list(self.rgb_to_dwt(*wm_rgb))
-
 
         for color in range(3):
             dct_image_dwt = TwoDimensionalDCT.forward(image_dwt[color][1][2])
