@@ -14,7 +14,8 @@ class Algorithm(object):
     available_algorithms = {
         'dwt':  'core.algs.dwt.DWT',
         'cox': 'core.algs.cox.Cox',
-        'dummy': 'core.algs.abstract.Dummy'
+        'dummy': 'core.algs.abstract.Dummy',
+        'recover': 'core.algs.recover.Recover'
     }
 
     @classmethod
