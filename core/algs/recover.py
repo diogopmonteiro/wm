@@ -18,7 +18,7 @@ class Recover(Algorithm):
         r,g,b = self.split_image(image)
 
         # Divide the image into non-overlapping blocks of 4X4 pixels
-        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b)
+        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
 
         # Randomly pick a prime number k E [1, N - 1]
         k = self.get_k(self.N)
@@ -30,9 +30,11 @@ class Recover(Algorithm):
         for v in r_matrix:
             cor[v] = ((k*v)%self.N)+1
 
-
         return image
-        pass
+
+    def bin(self, s):
+       return str(s) if s<=1 else bin(s>>1) + str(s&1)
+
 
     def is_prime(self, a):
         return all(a % i for i in xrange(2, a))
@@ -42,12 +44,12 @@ class Recover(Algorithm):
         n = random.choice(primes)
         return n
 
-    def divide_in_blocks(self, r, g ,b):
+    def divide_in_blocks(self, r, g, b, num):
         r_matrix = {}
         g_matrix = {}
         b_matrix = {}
-        k = self.NUM
-        z = self.NUM
+        k = num
+        z = num
         self.N = (len(r)/self.NUM)**2
         for i in range(k, len(r)+1, k):
             for j in range(z, len(r[0])+1, z):
