@@ -287,7 +287,7 @@ class Recover(Algorithm):
 
         # Divide the image into non-overlapping blocks of 4X4 pixels
         blocks = self.divide_in_blocks(r,g,b, self.NUM)
-
+        Max = len(r)/4
         new_r_matrix = {}
         new_g_matrix = {}
         new_b_matrix = {}
@@ -311,6 +311,27 @@ class Recover(Algorithm):
         for bblock in b_erroneous:
             if b_erroneous[bblock] is True:
                 erroneous_blocks.add(bblock[0])
+
+        print(len(erroneous_blocks))
+
+        while True:
+            list = set()
+            for k in erroneous_blocks:
+                for x in neighbors(k,Max):
+                    count = 0
+                    for j in neighbors(x, Max):
+                        if j in erroneous_blocks:
+                            count += 1
+                    if count > 5:
+                        list.add(x)
+            tmp = erroneous_blocks.copy()
+            erroneous_blocks.union(list)
+            if tmp == erroneous_blocks:
+                break
+
+        print(len(erroneous_blocks))
+
+
 
         k = -1
         with open(Algorithm().get_image_output_file(watermark)) as fd:
@@ -514,3 +535,16 @@ class Recover(Algorithm):
 
         return [r_aux, g_aux, b_aux], [r_matrix, g_matrix, b_matrix], [new_r_matrix, new_b_matrix, new_g_matrix]
 
+
+def neighbors(n, m):
+    y = n%m
+    x = n//m
+    l = []
+    for i in range(-1,2):
+        k = x + i
+        if not (k < 0 or k >= m):
+            for j in range(-1, 2):
+                z = y + j
+                if not (k == x and z == y) and not (z < 0 or z >= m):
+                    l += [k*m+z]
+    return l
