@@ -35,8 +35,7 @@ class Recover(Algorithm):
         cor = {}
         
         for v in r_matrix:
-            cor[v] = ((k*v)%self.N)
-
+            cor[v] = (v+1)%self.N#((k*(v+1))%self.N)+1
         # Block watermark embedding
 
         new_r_matrix = {}
@@ -47,6 +46,7 @@ class Recover(Algorithm):
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
+
 
 
         # Sub-block watermark generation and embedding algorithm
@@ -60,6 +60,7 @@ class Recover(Algorithm):
                         new_g_matrix[k][j][(x,y)] = self.change_lsb(new_g_matrix[k][j][(x,y)], 2, 0)
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
 
+
         # Compute the average intensity of the block and each
         # of its four sub-blocks, denoted by avg_{r,g,b}(calculated before) and avg_{r,g,b}' ,respectively.
         # Generate the authentication watermark v of each sub-block
@@ -72,12 +73,17 @@ class Recover(Algorithm):
 
         # point 6, 7
 
+        print(cor)
 
         i = 0
+        k = -1
         Ak = i
         Bk = cor[i]
         while True:
-
+            #Ak = AAk-1
+            #Bk = BBk-1
+            print(Ak,Bk)
+            k +=1
             new_r_matrix[Bk]["avg"] = {"avg":self.avg_int(r_matrix[Bk])}
             new_g_matrix[Bk]["avg"] = {"avg":self.avg_int(g_matrix[Bk])}
             new_b_matrix[Bk]["avg"] = {"avg":self.avg_int(b_matrix[Bk])}
@@ -135,15 +141,15 @@ class Recover(Algorithm):
             Ak = Bk
             Bk = cor[Ak]
 
-            print(Ak, Bk)
-
+        print(k)
+        print(len(cor))
         return image
 
     def embed_matrix_lsb(self, matrix, v, p, r):
         vpr = str(v) + str(p) + str(r)
         for x in range(len(matrix)):
             for y in range(len(matrix[0])):
-                self.embed_pixel_lsb(matrix, (x,y) ,vpr[x]+vpr[x+4])
+                self.embed_pixel_lsb(matrix, (x,y) ,vpr[y+(x*len(matrix))]+vpr[y+(x*len(matrix))+4])
 
 
     def embed_pixel_lsb(self, matrix, i, to_emb):
@@ -166,8 +172,10 @@ class Recover(Algorithm):
 
     def count_bit_msb(self, number, num_of_bits, n_val):
         snum = "{0:b}".format(number)
-        if len(snum) < num_of_bits:
-            snum = (num_of_bits - len(snum))*"0"+snum
+        if num_of_bits>8:
+            num_of_bits = 8
+        if len(snum) < 8:
+            snum = (8 - len(snum))*"0"+snum
         count = 0
         for i in range(0, num_of_bits):
             count += 1 if snum[i] == str(n_val) else 0
@@ -215,7 +223,7 @@ class Recover(Algorithm):
         return r_matrix, g_matrix, b_matrix
 
     def extract_specific(self, image, watermark):
-        erroneous, new_r_matrix, new_g_matrix, new_b_matrix = self.tamper_detection_level_1(image, watermark)
+        erroneous, matrix = self.tamper_detection_level_1(image, watermark)
         print(erroneous)
         return 0,0
 
@@ -225,24 +233,15 @@ class Recover(Algorithm):
         if len(snum) <= bit:
             return 0
         else:
-            return int(snum[bit])
+            return int(snum[-1-bit])
 
 
     def tamper_detection_level_1(self, image, image_file):
-        erroneous = False
-
-        name = image_file.split('.')[0]
-
-        with open(Algorithm().get_image_output_file(image_file)) as fd:
-            k = fd.read()
-
-        k = int(k)
 
         r,g,b = self.split_image(image)
-        print(1)
+
         # Divide the image into non-overlapping blocks of 2X2 pixels
         r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
-        print(1)
 
         new_r_matrix = {}
         new_g_matrix = {}
@@ -252,13 +251,9 @@ class Recover(Algorithm):
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
-            r_aux[k] = False
-            g_aux[k] = False
-            b_aux[k] = False
-        print(1)
+
 
         p_r, v_r, p_g, v_g, p_b, v_b = {}, {}, {}, {}, {}, {}
-
         for a in new_r_matrix:
             for b in new_r_matrix[a]:
                 v_r[(a, b)] = self.get_bit_value(new_r_matrix[a][b][(0, 0)], 1)
@@ -267,7 +262,9 @@ class Recover(Algorithm):
                 p_g[(a, b)] = self.get_bit_value(new_g_matrix[a][b][(0, 1)], 1)
                 v_b[(a, b)] = self.get_bit_value(new_b_matrix[a][b][(0, 0)], 1)
                 p_b[(a, b)] = self.get_bit_value(new_b_matrix[a][b][(0, 1)], 1)
-        print(1)
+                r_aux[(a, b)] = False
+                g_aux[(a, b)] = False
+                b_aux[(a, b)] = False
 
         # Set the two LSB's of each pixel within B's to zero
         for k in new_r_matrix:
@@ -277,9 +274,7 @@ class Recover(Algorithm):
                         new_r_matrix[k][j][(x,y)] = self.change_lsb(new_r_matrix[k][j][(x,y)], 2, 0)
                         new_g_matrix[k][j][(x,y)] = self.change_lsb(new_g_matrix[k][j][(x,y)], 2, 0)
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
-
-        # And compute the avg intensity
-        print(1)
+                        # And compute the avg intensity
 
         alpha_r, alpha_g, alpha_b = {}, {}, {}
 
@@ -291,69 +286,31 @@ class Recover(Algorithm):
 
         # Count the total number of 1s in avg_B and denote it N's
 
-        cor = {}
+        N_r, N_g, N_b = {},{},{}
 
-        for v in r_matrix:
-            cor[v] = ((k*v)%self.N)
-        print(1)
+        for a in new_r_matrix:
+            for b in new_r_matrix[a]:
+                N_r[(a,b)] = self.count_bit_msb(alpha_r[(a,b)], 8, 1)
+                if p_r[(a,b)] != (N_r[(a,b)]%2):
+                    r_aux[(a,b)] = True
+                N_g[(a,b)] = self.count_bit_msb(alpha_g[(a,b)], 8, 1)
+                if p_g[(a,b)] != (N_g[(a,b)]%2):
+                    g_aux[(a,b)] = True
+                N_b[(a,b)] = self.count_bit_msb(alpha_b[(a,b)], 8, 1)
+                if p_b[(a,b)] != (N_b[(a,b)]%2):
+                    b_aux[(a,b)] = True
 
-        i = 0
-        Ak = i
-        Bk = cor[i]
-        while True:
+        for a in new_r_matrix:
+            ar = self.avg_int(r_matrix[a])
+            ag = self.avg_int(g_matrix[a])
+            ab = self.avg_int(b_matrix[a])
+            for b in new_r_matrix[a]:
+                if v_r[(a,b)] != (1 if alpha_r[(a,b)] >= ar else 0):
+                    r_aux[(a,b)] = True
+                if v_g[(a,b)] != (1 if alpha_g[(a,b)] >= ag else 0):
+                    g_aux[(a,b)] = True
+                if v_b[(a,b)] != (1 if alpha_b[(a,b)] >= ab else 0):
+                    b_aux[(a,b)] = True
 
-            new_r_matrix[Bk]["avg"] = {"avg":self.avg_int(r_matrix[Bk])}
-            new_g_matrix[Bk]["avg"] = {"avg":self.avg_int(g_matrix[Bk])}
-            new_b_matrix[Bk]["avg"] = {"avg":self.avg_int(b_matrix[Bk])}
-            new_r_matrix[Ak]["avg"] = {"avg":self.avg_int(r_matrix[Ak])}
-            new_g_matrix[Ak]["avg"] = {"avg":self.avg_int(g_matrix[Ak])}
-            new_b_matrix[Ak]["avg"] = {"avg":self.avg_int(b_matrix[Ak])}
-            new_r_matrix[Bk]["3-tuple"] = {}
-            new_g_matrix[Bk]["3-tuple"] = {}
-            new_b_matrix[Bk]["3-tuple"] = {}
-            print(new_r_matrix[Bk])
-            for j in new_r_matrix[Bk]:
-                print j
-                if j != "avg" and j != "3-tuple":
-                    new_r_matrix[Ak]["avg"][j] = self.avg_int(new_r_matrix[Ak][j])
-                    new_g_matrix[Ak]["avg"][j] = self.avg_int(new_g_matrix[Ak][j])
-                    new_b_matrix[Ak]["avg"][j] = self.avg_int(new_b_matrix[Ak][j])
-                    print(2)
-                    r_truncated_A = self.truncate_x_lsb(new_r_matrix[Ak]["avg"][j], 2)
-                    g_truncated_A = self.truncate_x_lsb(new_g_matrix[Ak]["avg"][j], 2)
-                    b_truncated_A = self.truncate_x_lsb(new_b_matrix[Ak]["avg"][j], 2)
-                    print(2)
-                    new_r_matrix[Bk]["avg"][j] = self.avg_int(new_r_matrix[Bk][j])
-                    new_r_matrix[Bk]["3-tuple"][j] = {}
-                    new_r_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_r_matrix[Bk]["avg"][j] >= new_r_matrix[Bk]["avg"]["avg"] else 0
-                    if (self.count_bit_msb(new_r_matrix[Bk]["avg"][j], 6, 1) % 2 ) != p_r or \
-                                    v_r[(Bk,j)] != new_r_matrix[Bk]["3-tuple"][j]["v"]:
-                        r_aux[Bk] = True
-                    print(2)
-                    new_g_matrix[Bk]["avg"][j] = self.avg_int(new_g_matrix[Bk][j])
-                    new_g_matrix[Bk]["3-tuple"][j] = {}
-                    new_g_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_g_matrix[Bk]["avg"][j] >= new_g_matrix[Bk]["avg"]["avg"] else 0
-                    if (self.count_bit_msb(new_g_matrix[Bk]["avg"][j], 6, 1) % 2) != p_g or \
-                            new_g_matrix[Bk]["3-tuple"][j]["v"]  != v_g[(Bk,j)]:
-                        g_aux[Bk] = True
-                    new_b_matrix[Bk]["avg"][j] = self.avg_int(new_b_matrix[Bk][j])
-                    new_b_matrix[Bk]["3-tuple"][j] = {}
-                    print(2)
-                    new_b_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_b_matrix[Bk]["avg"][j] >= new_b_matrix[Bk]["avg"]["avg"] else 0
-                    if (self.count_bit_msb(new_b_matrix[Bk]["avg"][j], 6, 1) % 2) != p_b or \
-                            new_b_matrix[Bk]["3-tuple"][j]["v"]  != v_b[(Bk,j)]:
-                        b_aux[Bk] = True
-            print(5)
 
-            if Bk == i:
-                break
-            Ak = Bk
-            Bk = cor[Ak]
-            print(1)
-
-        print(Ak, Bk)
-        print(erroneous)
-        return [r_aux, g_aux, b_aux], [new_r_matrix, new_g_matrix, new_b_matrix]
+        return [r_aux, g_aux, b_aux], image
