@@ -248,9 +248,13 @@ class Recover(Algorithm):
         new_g_matrix = {}
         new_b_matrix = {}
 
+        r_aux, b_aux, g_aux = {}, {}, {}
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
+            r_aux[k] = False
+            g_aux[k] = False
+            b_aux[k] = False
         print(1)
 
         p_r, v_r, p_g, v_g, p_b, v_b = {}, {}, {}, {}, {}, {}
@@ -325,7 +329,7 @@ class Recover(Algorithm):
                         1 if new_r_matrix[Bk]["avg"][j] >= new_r_matrix[Bk]["avg"]["avg"] else 0
                     if (self.count_bit_msb(new_r_matrix[Bk]["avg"][j], 6, 1) % 2 ) != p_r or \
                                     v_r[(Bk,j)] != new_r_matrix[Bk]["3-tuple"][j]["v"]:
-                        erroneous = True
+                        r_aux[Bk] = True
                     print(2)
                     new_g_matrix[Bk]["avg"][j] = self.avg_int(new_g_matrix[Bk][j])
                     new_g_matrix[Bk]["3-tuple"][j] = {}
@@ -333,7 +337,7 @@ class Recover(Algorithm):
                         1 if new_g_matrix[Bk]["avg"][j] >= new_g_matrix[Bk]["avg"]["avg"] else 0
                     if (self.count_bit_msb(new_g_matrix[Bk]["avg"][j], 6, 1) % 2) != p_g or \
                             new_g_matrix[Bk]["3-tuple"][j]["v"]  != v_g[(Bk,j)]:
-                        erroneous = True
+                        g_aux[Bk] = True
                     new_b_matrix[Bk]["avg"][j] = self.avg_int(new_b_matrix[Bk][j])
                     new_b_matrix[Bk]["3-tuple"][j] = {}
                     print(2)
@@ -341,7 +345,7 @@ class Recover(Algorithm):
                         1 if new_b_matrix[Bk]["avg"][j] >= new_b_matrix[Bk]["avg"]["avg"] else 0
                     if (self.count_bit_msb(new_b_matrix[Bk]["avg"][j], 6, 1) % 2) != p_b or \
                             new_b_matrix[Bk]["3-tuple"][j]["v"]  != v_b[(Bk,j)]:
-                        erroneous = True
+                        b_aux[Bk] = True
             print(5)
 
             if Bk == i:
@@ -352,4 +356,4 @@ class Recover(Algorithm):
 
         print(Ak, Bk)
         print(erroneous)
-        return erroneous, new_r_matrix, new_g_matrix, new_b_matrix
+        return [r_aux, g_aux, b_aux], [new_r_matrix, new_g_matrix, new_b_matrix]
