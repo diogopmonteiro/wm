@@ -130,74 +130,6 @@ class Recover(Algorithm):
             A = B
             B = cor[A]
 
-        """print(cor)
-
-        i = 0
-        k = -1
-        Ak = i
-        Bk = cor[i]
-        while True:
-            #Ak = AAk-1
-            #Bk = BBk-1
-            print(Ak,Bk)
-            k +=1
-            new_r_matrix[Bk]["avg"] = {"avg":self.avg_int(r_matrix[Bk])}
-            new_g_matrix[Bk]["avg"] = {"avg":self.avg_int(g_matrix[Bk])}
-            new_b_matrix[Bk]["avg"] = {"avg":self.avg_int(b_matrix[Bk])}
-            new_r_matrix[Ak]["avg"] = {"avg":self.avg_int(r_matrix[Ak])}
-            new_g_matrix[Ak]["avg"] = {"avg":self.avg_int(g_matrix[Ak])}
-            new_b_matrix[Ak]["avg"] = {"avg":self.avg_int(b_matrix[Ak])}
-            new_r_matrix[Bk]["3-tuple"] = {}
-            new_g_matrix[Bk]["3-tuple"] = {}
-            new_b_matrix[Bk]["3-tuple"] = {}
-            for j in new_r_matrix[Bk]:
-                if j != "avg" and j != "3-tuple":
-                    new_r_matrix[Ak]["avg"][j] = self.avg_int(new_r_matrix[Ak][j])
-                    new_g_matrix[Ak]["avg"][j] = self.avg_int(new_g_matrix[Ak][j])
-                    new_b_matrix[Ak]["avg"][j] = self.avg_int(new_b_matrix[Ak][j])
-
-                    r_truncated_A = self.truncate_x_lsb(new_r_matrix[Ak]["avg"][j], 2)
-                    g_truncated_A = self.truncate_x_lsb(new_g_matrix[Ak]["avg"][j], 2)
-                    b_truncated_A = self.truncate_x_lsb(new_b_matrix[Ak]["avg"][j], 2)
-
-                    new_r_matrix[Bk]["avg"][j] = self.avg_int(new_r_matrix[Bk][j])
-                    new_r_matrix[Bk]["3-tuple"][j] = {}
-                    new_r_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_r_matrix[Bk]["avg"][j] >= new_r_matrix[Bk]["avg"]["avg"] else 0
-                    new_r_matrix[Bk]["3-tuple"][j]["p"] = self.count_bit_msb(new_r_matrix[Bk]["avg"][j], 6, 1) % 2
-                    self.embed_matrix_lsb(
-                        new_r_matrix[Bk][j],
-                        new_r_matrix[Bk]["3-tuple"][j]["v"],
-                        new_r_matrix[Bk]["3-tuple"][j]["p"],
-                        r_truncated_A
-                    )
-                    new_g_matrix[Bk]["avg"][j] = self.avg_int(new_g_matrix[Bk][j])
-                    new_g_matrix[Bk]["3-tuple"][j] = {}
-                    new_g_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_g_matrix[Bk]["avg"][j] >= new_g_matrix[Bk]["avg"]["avg"] else 0
-                    new_g_matrix[Bk]["3-tuple"][j]["p"] = self.count_bit_msb(new_g_matrix[Bk]["avg"][j], 6, 1) % 2
-                    self.embed_matrix_lsb(
-                        new_g_matrix[Bk][j],
-                        new_g_matrix[Bk]["3-tuple"][j]["v"],
-                        new_g_matrix[Bk]["3-tuple"][j]["p"],
-                        g_truncated_A
-                    )
-                    new_b_matrix[Bk]["avg"][j] = self.avg_int(new_b_matrix[Bk][j])
-                    new_b_matrix[Bk]["3-tuple"][j] = {}
-                    new_b_matrix[Bk]["3-tuple"][j]["v"] = \
-                        1 if new_b_matrix[Bk]["avg"][j] >= new_b_matrix[Bk]["avg"]["avg"] else 0
-                    new_b_matrix[Bk]["3-tuple"][j]["p"] = self.count_bit_msb(new_b_matrix[Bk]["avg"][j], 6, 1) % 2
-                    self.embed_matrix_lsb(
-                        new_b_matrix[Bk][j],
-                        new_b_matrix[Bk]["3-tuple"][j]["v"],
-                        new_b_matrix[Bk]["3-tuple"][j]["p"],
-                        b_truncated_A
-                    )
-            if Bk == i:
-                break
-            Ak = Bk
-            Bk = cor[Ak]"""
-
         return image
 
     def embed_matrix_lsb(self, matrix, v, p, r):
@@ -217,7 +149,6 @@ class Recover(Algorithm):
         snum = snum[:len(to_emb)*-1] + to_emb
         b = BitArray(bin=snum)
         matrix[i] = b.uint
-
 
     def truncate_x_lsb(self, number, x):
         snum = "{0:b}".format(number)
@@ -312,8 +243,6 @@ class Recover(Algorithm):
             if b_erroneous[bblock] is True:
                 erroneous_blocks.add(bblock[0])
 
-        print(len(erroneous_blocks))
-
         while True:
             list = set()
             for k in erroneous_blocks:
@@ -329,10 +258,6 @@ class Recover(Algorithm):
             if tmp == erroneous_blocks:
                 break
 
-        print(len(erroneous_blocks))
-
-
-
         k = -1
         with open(Algorithm().get_image_output_file(watermark)) as fd:
             k = int(fd.read())
@@ -344,7 +269,6 @@ class Recover(Algorithm):
             b_invalid_block = sblocks[2][block_number]
 
             next_block = (k*(block_number+1)) % len(blocks[0])
-
 
             if next_block in erroneous_blocks:
                 continue
@@ -393,7 +317,6 @@ class Recover(Algorithm):
                 binary_avg += str(self.get_bit_value(subblock[(1,1)], 0))
                 binary_avg += "00"
                 b_avg[rBs] = BitArray(bin=binary_avg).uint
-
 
             avg = [r_avg, g_avg, b_avg]
             invblock = [r_invalid_block, g_invalid_block, b_invalid_block]
