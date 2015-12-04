@@ -72,8 +72,65 @@ class Recover(Algorithm):
         # Compute the average intensity of each corresponding sub-block A
 
         # point 6, 7
+        r_avg, g_avg, b_avg = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_avg[Bk] = {}
+            r_avg[Bk]['avg'] = self.avg_int(r_matrix[Bk])
+            g_avg[Bk] = {}
+            g_avg[Bk]['avg'] = self.avg_int(g_matrix[Bk])
+            b_avg[Bk] = {}
+            b_avg[Bk]['avg'] = self.avg_int(b_matrix[Bk])
+            for Bs in new_r_matrix[Bk]:
+                r_avg[Bk][Bs] = self.avg_int(new_r_matrix[Bk][Bs])
+                g_avg[Bk][Bs] = self.avg_int(new_g_matrix[Bk][Bs])
+                b_avg[Bk][Bs] = self.avg_int(new_b_matrix[Bk][Bs])
 
-        print(cor)
+        r_v, g_v, b_v = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_v[Bk] = {}
+            g_v[Bk] = {}
+            b_v[Bk] = {}
+            for Bs in new_r_matrix[Bk]:
+                r_v[Bk][Bs] = 1 if r_avg[Bk][Bs] >= r_avg[Bk]['avg'] else 0
+                g_v[Bk][Bs] = 1 if g_avg[Bk][Bs] >= g_avg[Bk]['avg'] else 0
+                b_v[Bk][Bs] = 1 if b_avg[Bk][Bs] >= b_avg[Bk]['avg'] else 0
+
+        r_p, g_p, b_p = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_p[Bk] = {}
+            g_p[Bk] = {}
+            b_p[Bk] = {}
+            for Bs in new_r_matrix[Bk]:
+                num = self.count_bit_msb(r_avg[Bk][Bs], 6, 1)
+                r_p[Bk][Bs] = 1 if num%2 == 1 else 0
+                num = self.count_bit_msb(g_avg[Bk][Bs], 6, 1)
+                g_p[Bk][Bs] = 1 if num%2 == 1 else 0
+                num = self.count_bit_msb(b_avg[Bk][Bs], 6, 1)
+                b_p[Bk][Bs] = 1 if num%2 == 1 else 0
+
+
+        A = 0
+        B = cor[A]
+        while True:
+            for As in new_r_matrix[A]:
+                r_avg_A = r_avg[A][As]
+                g_avg_A = g_avg[A][As]
+                b_avg_A = b_avg[A][As]
+
+                r_avg_A = self.truncate_x_lsb(r_avg_A, 2)
+                g_avg_A = self.truncate_x_lsb(g_avg_A, 2)
+                b_avg_A = self.truncate_x_lsb(b_avg_A, 2)
+
+                self.embed_matrix_lsb(new_r_matrix[B][As], r_v[B][As], r_p[B][As], r_avg_A)
+                self.embed_matrix_lsb(new_g_matrix[B][As], g_v[B][As], g_p[B][As], g_avg_A)
+                self.embed_matrix_lsb(new_b_matrix[B][As], b_v[B][As], b_p[B][As], b_avg_A)
+
+            if B == 0:
+                break
+            A = B
+            B = cor[A]
+
+        """print(cor)
 
         i = 0
         k = -1
@@ -139,7 +196,7 @@ class Recover(Algorithm):
             if Bk == i:
                 break
             Ak = Bk
-            Bk = cor[Ak]
+            Bk = cor[Ak]"""
 
         print(k)
         print(len(cor))
@@ -147,6 +204,7 @@ class Recover(Algorithm):
 
     def embed_matrix_lsb(self, matrix, v, p, r):
         vpr = str(v) + str(p) + str(r)
+
         for x in range(len(matrix)):
             for y in range(len(matrix[0])):
                 self.embed_pixel_lsb(matrix, (x,y) ,vpr[y+(x*len(matrix))]+vpr[y+(x*len(matrix))+4])
@@ -165,10 +223,11 @@ class Recover(Algorithm):
 
     def truncate_x_lsb(self, number, x):
         snum = "{0:b}".format(number)
-        if len(snum) <= x:
-            return "0"*(8-x)
+        if len(snum) < 8:
+            missing = 8 - len(snum)
+            snum = "0" * missing + snum
 
-        return snum[:-1*x] if len(snum[:-1*x]) == (8-x) else "0"*(8-len(snum[:-1*x]))+snum[:-1*x]
+        return snum[:-1*x]
 
     def count_bit_msb(self, number, num_of_bits, n_val):
         snum = "{0:b}".format(number)
@@ -224,7 +283,7 @@ class Recover(Algorithm):
 
     def extract_specific(self, image, watermark):
         erroneous, matrix = self.tamper_detection_level_1(image, watermark)
-        print(erroneous)
+        #print(erroneous)
         return 0,0
 
 
@@ -283,6 +342,7 @@ class Recover(Algorithm):
                 alpha_r[(a,b)] = self.avg_int(new_r_matrix[a][b])
                 alpha_g[(a,b)] = self.avg_int(new_g_matrix[a][b])
                 alpha_b[(a,b)] = self.avg_int(new_b_matrix[a][b])
+                #print "Average of (%s, %s) = %s" % (str(a),str(b), str(alpha_r[(a,b)]))
 
         # Count the total number of 1s in avg_B and denote it N's
 
@@ -292,6 +352,7 @@ class Recover(Algorithm):
             for b in new_r_matrix[a]:
                 N_r[(a,b)] = self.count_bit_msb(alpha_r[(a,b)], 8, 1)
                 if p_r[(a,b)] != (N_r[(a,b)]%2):
+                    #print "Node (a,b) = (%s, %s) with p = %s and n = %s" % (str(a), str(b), str(p_r[(a,b)]), str(N_r[(a,b)]%2))
                     r_aux[(a,b)] = True
                 N_g[(a,b)] = self.count_bit_msb(alpha_g[(a,b)], 8, 1)
                 if p_g[(a,b)] != (N_g[(a,b)]%2):
