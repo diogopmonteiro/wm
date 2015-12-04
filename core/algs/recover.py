@@ -35,7 +35,7 @@ class Recover(Algorithm):
         cor = {}
         
         for v in r_matrix:
-            cor[v] = (v+1)%self.N#((k*(v+1))%self.N)+1
+            cor[v] = (k*(v+1))%self.N#((k*(v+1))%self.N)+1
         # Block watermark embedding
 
         new_r_matrix = {}
@@ -109,7 +109,7 @@ class Recover(Algorithm):
                 b_p[Bk][Bs] = 1 if num%2 == 1 else 0
 
 
-        A = 0
+        A = cor[0]
         B = cor[A]
         while True:
             for As in new_r_matrix[A]:
@@ -125,7 +125,7 @@ class Recover(Algorithm):
                 self.embed_matrix_lsb(new_g_matrix[B][As], g_v[B][As], g_p[B][As], g_avg_A)
                 self.embed_matrix_lsb(new_b_matrix[B][As], b_v[B][As], b_p[B][As], b_avg_A)
 
-            if B == 0:
+            if B == cor[0]:
                 break
             A = B
             B = cor[A]
@@ -198,8 +198,6 @@ class Recover(Algorithm):
             Ak = Bk
             Bk = cor[Ak]"""
 
-        print(k)
-        print(len(cor))
         return image
 
     def embed_matrix_lsb(self, matrix, v, p, r):
@@ -282,9 +280,118 @@ class Recover(Algorithm):
         return r_matrix, g_matrix, b_matrix
 
     def extract_specific(self, image, watermark):
-        erroneous = self.tamper_detection_level_1(image, watermark)
-        print(erroneous)
-        return 0,0
+        import numpy
+        erroneous, _, _ = self.tamper_detection_level_1(numpy.array(image), watermark)
+
+        r,g,b = self.split_image(image)
+
+        # Divide the image into non-overlapping blocks of 4X4 pixels
+        blocks = self.divide_in_blocks(r,g,b, self.NUM)
+
+        new_r_matrix = {}
+        new_g_matrix = {}
+        new_b_matrix = {}
+        for k in blocks[0]:
+            new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
+                self.divide_in_blocks(blocks[0][k], blocks[1][k], blocks[2][k], 2)
+
+        sblocks = [new_r_matrix, new_g_matrix, new_b_matrix]
+
+        r_erroneous = erroneous[0]
+        g_erroneous = erroneous[1]
+        b_erroneous = erroneous[2]
+
+        erroneous_blocks = set()
+        for rblock in r_erroneous:
+            if r_erroneous[rblock] is True:
+                erroneous_blocks.add(rblock[0])
+        for gblock in g_erroneous:
+            if g_erroneous[gblock] is True:
+                erroneous_blocks.add(gblock[0])
+        for bblock in b_erroneous:
+            if b_erroneous[bblock] is True:
+                erroneous_blocks.add(bblock[0])
+
+        k = -1
+        with open(Algorithm().get_image_output_file(watermark)) as fd:
+            k = int(fd.read())
+
+        for block in erroneous_blocks:
+            block_number = block
+            r_invalid_block = sblocks[0][block_number]
+            g_invalid_block = sblocks[1][block_number]
+            b_invalid_block = sblocks[2][block_number]
+
+            next_block = (k*(block_number+1)) % len(blocks[0])
+
+
+            if next_block in erroneous_blocks:
+                continue
+
+            r_next_block = sblocks[0][next_block]
+            g_next_block = sblocks[1][next_block]
+            b_next_block = sblocks[2][next_block]
+
+            r_avg = {}
+            for rBs in r_next_block:
+                binary_avg = ""
+                subblock = r_next_block[rBs]
+
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(0,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(0,1)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 0))
+                binary_avg += "00"
+                r_avg[rBs] = BitArray(bin=binary_avg).uint
+
+            g_avg = {}
+            for rGs in g_next_block:
+                binary_avg = ""
+                subblock = g_next_block[rGs]
+
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(0,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(0,1)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 0))
+                binary_avg += "00"
+                g_avg[rGs] = BitArray(bin=binary_avg).uint
+
+            b_avg = {}
+            for rBs in b_next_block:
+                binary_avg = ""
+                subblock = b_next_block[rBs]
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 1))
+                binary_avg += str(self.get_bit_value(subblock[(0,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(0,1)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,0)], 0))
+                binary_avg += str(self.get_bit_value(subblock[(1,1)], 0))
+                binary_avg += "00"
+                b_avg[rBs] = BitArray(bin=binary_avg).uint
+
+
+            avg = [r_avg, g_avg, b_avg]
+            invblock = [r_invalid_block, g_invalid_block, b_invalid_block]
+
+            for color in range(3):
+                color_avg = avg[color]
+                color_invalid_block = invblock[color]
+                for bb in color_invalid_block:
+                    subblock = color_invalid_block[bb]
+                    for x in range(2):
+                        for y in range(2):
+                            subblock[(x,y)] = color_avg[bb]
+
+        return image, 0
+
+    def get_watermark_name(self, filename):
+        import os
+        _, filename = os.path.split(filename)
+        return self.get_image_output_file(_+"recovered-"+filename.split('.')[0]+".png")
 
 
     def get_bit_value(self, value, bit):
@@ -405,5 +512,5 @@ class Recover(Algorithm):
             if v_b[k] != b_v[k[0]][k[1]]:
                 b_aux[k] = True
 
-        return [r_aux, g_aux, b_aux]
+        return [r_aux, g_aux, b_aux], [r_matrix, g_matrix, b_matrix], [new_r_matrix, new_b_matrix, new_g_matrix]
 
