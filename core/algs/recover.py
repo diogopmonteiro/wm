@@ -215,7 +215,10 @@ class Recover(Algorithm):
         return r_matrix, g_matrix, b_matrix
 
     def extract_specific(self, image, watermark):
-        self.tamper_detection_level_1(image, watermark)
+        erroneous, new_r_matrix, new_g_matrix, new_b_matrix = self.tamper_detection_level_1(image, watermark)
+        print(erroneous)
+        return 0,0
+
 
     def get_bit_value(self, value, bit):
         snum = "{0:b}".format(value)
@@ -236,9 +239,10 @@ class Recover(Algorithm):
         k = int(k)
 
         r,g,b = self.split_image(image)
-
+        print(1)
         # Divide the image into non-overlapping blocks of 2X2 pixels
         r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
+        print(1)
 
         new_r_matrix = {}
         new_g_matrix = {}
@@ -247,6 +251,7 @@ class Recover(Algorithm):
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
+        print(1)
 
         p_r, v_r, p_g, v_g, p_b, v_b = {}, {}, {}, {}, {}, {}
 
@@ -258,6 +263,7 @@ class Recover(Algorithm):
                 p_g[(a, b)] = self.get_bit_value(new_g_matrix[a][b][(0, 1)], 1)
                 v_b[(a, b)] = self.get_bit_value(new_b_matrix[a][b][(0, 0)], 1)
                 p_b[(a, b)] = self.get_bit_value(new_b_matrix[a][b][(0, 1)], 1)
+        print(1)
 
         # Set the two LSB's of each pixel within B's to zero
         for k in new_r_matrix:
@@ -269,6 +275,7 @@ class Recover(Algorithm):
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
 
         # And compute the avg intensity
+        print(1)
 
         alpha_r, alpha_g, alpha_b = {}, {}, {}
 
@@ -284,6 +291,7 @@ class Recover(Algorithm):
 
         for v in r_matrix:
             cor[v] = ((k*v)%self.N)
+        print(1)
 
         i = 0
         Ak = i
@@ -299,16 +307,18 @@ class Recover(Algorithm):
             new_r_matrix[Bk]["3-tuple"] = {}
             new_g_matrix[Bk]["3-tuple"] = {}
             new_b_matrix[Bk]["3-tuple"] = {}
+            print(new_r_matrix[Bk])
             for j in new_r_matrix[Bk]:
+                print j
                 if j != "avg" and j != "3-tuple":
                     new_r_matrix[Ak]["avg"][j] = self.avg_int(new_r_matrix[Ak][j])
                     new_g_matrix[Ak]["avg"][j] = self.avg_int(new_g_matrix[Ak][j])
                     new_b_matrix[Ak]["avg"][j] = self.avg_int(new_b_matrix[Ak][j])
-
+                    print(2)
                     r_truncated_A = self.truncate_x_lsb(new_r_matrix[Ak]["avg"][j], 2)
                     g_truncated_A = self.truncate_x_lsb(new_g_matrix[Ak]["avg"][j], 2)
                     b_truncated_A = self.truncate_x_lsb(new_b_matrix[Ak]["avg"][j], 2)
-
+                    print(2)
                     new_r_matrix[Bk]["avg"][j] = self.avg_int(new_r_matrix[Bk][j])
                     new_r_matrix[Bk]["3-tuple"][j] = {}
                     new_r_matrix[Bk]["3-tuple"][j]["v"] = \
@@ -316,6 +326,7 @@ class Recover(Algorithm):
                     if (self.count_bit_msb(new_r_matrix[Bk]["avg"][j], 6, 1) % 2 ) != p_r or \
                                     v_r[(Bk,j)] != new_r_matrix[Bk]["3-tuple"][j]["v"]:
                         erroneous = True
+                    print(2)
                     new_g_matrix[Bk]["avg"][j] = self.avg_int(new_g_matrix[Bk][j])
                     new_g_matrix[Bk]["3-tuple"][j] = {}
                     new_g_matrix[Bk]["3-tuple"][j]["v"] = \
@@ -325,18 +336,20 @@ class Recover(Algorithm):
                         erroneous = True
                     new_b_matrix[Bk]["avg"][j] = self.avg_int(new_b_matrix[Bk][j])
                     new_b_matrix[Bk]["3-tuple"][j] = {}
+                    print(2)
                     new_b_matrix[Bk]["3-tuple"][j]["v"] = \
                         1 if new_b_matrix[Bk]["avg"][j] >= new_b_matrix[Bk]["avg"]["avg"] else 0
                     if (self.count_bit_msb(new_b_matrix[Bk]["avg"][j], 6, 1) % 2) != p_b or \
                             new_b_matrix[Bk]["3-tuple"][j]["v"]  != v_b[(Bk,j)]:
                         erroneous = True
-
+            print(5)
 
             if Bk == i:
                 break
             Ak = Bk
             Bk = cor[Ak]
+            print(1)
 
-            print(Ak, Bk)
-
-            return erroneous, new_r_matrix, new_g_matrix, new_b_matrix
+        print(Ak, Bk)
+        print(erroneous)
+        return erroneous, new_r_matrix, new_g_matrix, new_b_matrix
