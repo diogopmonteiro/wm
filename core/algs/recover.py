@@ -25,7 +25,9 @@ class Recover(Algorithm):
         # Randomly pick a prime number k E [1, N - 1]
         k = self.get_k(self.N)
 
-        with open(Algorithm().get_image_output_file('{0}_k'.strip('.jpg').format(image_file)), 'w+') as fd:
+        name = image_file.split('.')[0]
+
+        with open(Algorithm().get_image_output_file('{0}_k'.split('.')[0].format(name)), 'w+') as fd:
             fd.write(str(k))
 
         # For each block number X, apply Eq. (3) to obtain X' the number of its mapping block.
@@ -213,7 +215,7 @@ class Recover(Algorithm):
         return r_matrix, g_matrix, b_matrix
 
     def extract_specific(self, image, watermark):
-        pass
+        self.tamper_detection_level_1(image, watermark)
 
     def get_bit_value(self, value, bit):
         snum = "{0:b}".format(value)
@@ -226,7 +228,9 @@ class Recover(Algorithm):
     def tamper_detection_level_1(self, image, image_file):
         erroneous = False
 
-        with open(Algorithm.get_image_output_file('{0}_k'.strip('.jpg').format())) as fd:
+        name = image_file.split('.')[0]
+
+        with open(Algorithm().get_image_output_file(image_file)) as fd:
             k = fd.read()
 
         k = int(k)
@@ -266,7 +270,7 @@ class Recover(Algorithm):
 
         # And compute the avg intensity
 
-        alpha_r, alpha_g, alpha_b = {}
+        alpha_r, alpha_g, alpha_b = {}, {}, {}
 
         for a in new_r_matrix:
             for b in new_r_matrix[a]:
@@ -310,7 +314,7 @@ class Recover(Algorithm):
                     new_r_matrix[Bk]["3-tuple"][j]["v"] = \
                         1 if new_r_matrix[Bk]["avg"][j] >= new_r_matrix[Bk]["avg"]["avg"] else 0
                     if (self.count_bit_msb(new_r_matrix[Bk]["avg"][j], 6, 1) % 2 ) != p_r or \
-                            new_r_matrix[Bk]["3-tuple"][j]["v"]  != v_r[(Bk,j)]:
+                                    v_r[(Bk,j)] != new_r_matrix[Bk]["3-tuple"][j]["v"]:
                         erroneous = True
                     new_g_matrix[Bk]["avg"][j] = self.avg_int(new_g_matrix[Bk][j])
                     new_g_matrix[Bk]["3-tuple"][j] = {}
@@ -335,4 +339,4 @@ class Recover(Algorithm):
 
             print(Ak, Bk)
 
-        return erroneous, new_r_matrix, new_b_matrix, new_g_matrix
+            return erroneous, new_r_matrix, new_g_matrix, new_b_matrix
