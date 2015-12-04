@@ -282,8 +282,8 @@ class Recover(Algorithm):
         return r_matrix, g_matrix, b_matrix
 
     def extract_specific(self, image, watermark):
-        erroneous, matrix = self.tamper_detection_level_1(image, watermark)
-        #print(erroneous)
+        erroneous = self.tamper_detection_level_1(image, watermark)
+        print(erroneous)
         return 0,0
 
 
@@ -297,21 +297,24 @@ class Recover(Algorithm):
 
     def tamper_detection_level_1(self, image, image_file):
 
+
         r,g,b = self.split_image(image)
 
-        # Divide the image into non-overlapping blocks of 2X2 pixels
+        # Divide the image into non-overlapping blocks of 4X4 pixels
         r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
+
+        # Block watermark embedding
 
         new_r_matrix = {}
         new_g_matrix = {}
         new_b_matrix = {}
 
-        r_aux, b_aux, g_aux = {}, {}, {}
+
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
 
-
+        r_aux, g_aux, b_aux = {},{},{}
         p_r, v_r, p_g, v_g, p_b, v_b = {}, {}, {}, {}, {}, {}
         for a in new_r_matrix:
             for b in new_r_matrix[a]:
@@ -325,7 +328,10 @@ class Recover(Algorithm):
                 g_aux[(a, b)] = False
                 b_aux[(a, b)] = False
 
-        # Set the two LSB's of each pixel within B's to zero
+
+        # Sub-block watermark generation and embedding algorithm
+        # Set the two LSBs of each pixel within the block to zero
+
         for k in new_r_matrix:
             for j in new_r_matrix[k]:
                 for x in range(len(new_r_matrix[k][j])):
@@ -333,45 +339,71 @@ class Recover(Algorithm):
                         new_r_matrix[k][j][(x,y)] = self.change_lsb(new_r_matrix[k][j][(x,y)], 2, 0)
                         new_g_matrix[k][j][(x,y)] = self.change_lsb(new_g_matrix[k][j][(x,y)], 2, 0)
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
-                        # And compute the avg intensity
-
-        alpha_r, alpha_g, alpha_b = {}, {}, {}
-
-        for a in new_r_matrix:
-            for b in new_r_matrix[a]:
-                alpha_r[(a,b)] = self.avg_int(new_r_matrix[a][b])
-                alpha_g[(a,b)] = self.avg_int(new_g_matrix[a][b])
-                alpha_b[(a,b)] = self.avg_int(new_b_matrix[a][b])
-                #print "Average of (%s, %s) = %s" % (str(a),str(b), str(alpha_r[(a,b)]))
-
-        # Count the total number of 1s in avg_B and denote it N's
-
-        N_r, N_g, N_b = {},{},{}
-
-        for a in new_r_matrix:
-            for b in new_r_matrix[a]:
-                N_r[(a,b)] = self.count_bit_msb(alpha_r[(a,b)], 8, 1)
-                if p_r[(a,b)] != (N_r[(a,b)]%2):
-                    #print "Node (a,b) = (%s, %s) with p = %s and n = %s" % (str(a), str(b), str(p_r[(a,b)]), str(N_r[(a,b)]%2))
-                    r_aux[(a,b)] = True
-                N_g[(a,b)] = self.count_bit_msb(alpha_g[(a,b)], 8, 1)
-                if p_g[(a,b)] != (N_g[(a,b)]%2):
-                    g_aux[(a,b)] = True
-                N_b[(a,b)] = self.count_bit_msb(alpha_b[(a,b)], 8, 1)
-                if p_b[(a,b)] != (N_b[(a,b)]%2):
-                    b_aux[(a,b)] = True
-
-        for a in new_r_matrix:
-            ar = self.avg_int(r_matrix[a])
-            ag = self.avg_int(g_matrix[a])
-            ab = self.avg_int(b_matrix[a])
-            for b in new_r_matrix[a]:
-                if v_r[(a,b)] != (1 if alpha_r[(a,b)] >= ar else 0):
-                    r_aux[(a,b)] = True
-                if v_g[(a,b)] != (1 if alpha_g[(a,b)] >= ag else 0):
-                    g_aux[(a,b)] = True
-                if v_b[(a,b)] != (1 if alpha_b[(a,b)] >= ab else 0):
-                    b_aux[(a,b)] = True
 
 
-        return [r_aux, g_aux, b_aux], image
+        # Compute the average intensity of the block and each
+        # of its four sub-blocks, denoted by avg_{r,g,b}(calculated before) and avg_{r,g,b}' ,respectively.
+        # Generate the authentication watermark v of each sub-block
+        # Generate the parity-check bit p of each sub-block
+
+        # From the mapping sequence generated in the preparation step, obtain block A whose recovery
+        # information will be storedin block B. {cor}
+
+        # Compute the average intensity of each corresponding sub-block A
+
+        # point 6, 7
+        r_avg, g_avg, b_avg = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_avg[Bk] = {}
+            r_avg[Bk]['avg'] = self.avg_int(r_matrix[Bk])
+            g_avg[Bk] = {}
+            g_avg[Bk]['avg'] = self.avg_int(g_matrix[Bk])
+            b_avg[Bk] = {}
+            b_avg[Bk]['avg'] = self.avg_int(b_matrix[Bk])
+            for Bs in new_r_matrix[Bk]:
+                r_avg[Bk][Bs] = self.avg_int(new_r_matrix[Bk][Bs])
+                g_avg[Bk][Bs] = self.avg_int(new_g_matrix[Bk][Bs])
+                b_avg[Bk][Bs] = self.avg_int(new_b_matrix[Bk][Bs])
+
+        r_v, g_v, b_v = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_v[Bk] = {}
+            g_v[Bk] = {}
+            b_v[Bk] = {}
+            for Bs in new_r_matrix[Bk]:
+                r_v[Bk][Bs] = 1 if r_avg[Bk][Bs] >= r_avg[Bk]['avg'] else 0
+                g_v[Bk][Bs] = 1 if g_avg[Bk][Bs] >= g_avg[Bk]['avg'] else 0
+                b_v[Bk][Bs] = 1 if b_avg[Bk][Bs] >= b_avg[Bk]['avg'] else 0
+
+        r_p, g_p, b_p = {}, {}, {}
+        for Bk in new_r_matrix:
+            r_p[Bk] = {}
+            g_p[Bk] = {}
+            b_p[Bk] = {}
+            for Bs in new_r_matrix[Bk]:
+                num = self.count_bit_msb(r_avg[Bk][Bs], 6, 1)
+                r_p[Bk][Bs] = 1 if num%2 == 1 else 0
+                num = self.count_bit_msb(g_avg[Bk][Bs], 6, 1)
+                g_p[Bk][Bs] = 1 if num%2 == 1 else 0
+                num = self.count_bit_msb(b_avg[Bk][Bs], 6, 1)
+                b_p[Bk][Bs] = 1 if num%2 == 1 else 0
+
+
+        for k in p_r:
+            if p_r[k] != r_p[k[0]][k[1]]:
+                r_aux[k] = True
+            if p_g[k] != g_p[k[0]][k[1]]:
+                g_aux[k] = True
+            if p_b[k] != b_p[k[0]][k[1]]:
+                b_aux[k] = True
+
+        for k in v_r:
+            if v_r[k] != r_v[k[0]][k[1]]:
+                r_aux[k] = True
+            if v_g[k] != g_v[k[0]][k[1]]:
+                g_aux[k] = True
+            if v_b[k] != b_v[k[0]][k[1]]:
+                b_aux[k] = True
+
+        return [r_aux, g_aux, b_aux]
+
