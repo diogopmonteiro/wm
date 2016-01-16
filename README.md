@@ -49,13 +49,16 @@ The operations available are:`
 * ``<operation> = extract``: Extract a watermark
 
     ```python run.py extract -a cox wm-img/lena.png wm-img/lena_wm.json```
+    
     where ```wm-img/lena.png``` is the watermarked image and ``wm-img/lena_wm.json`` is the
     watermark file produced by embed operation.
 
     ```python run.py extract -a dwt wm-img/lena.png```
+    
     where ```wm-img/lena.png``` is the watermarked image
     
     ```python run.py extract -a recover wm-img/lena.png wm-img/lena_k```
+    
     where ```wm-img/lena.png``` is the watermarked image and ```wm-img/lena_k``` is a file that contains the key to 
     build the sequence of blocks used in the embed phase of the recovery algorithm.
 
@@ -68,29 +71,30 @@ Benchmarks
 
 The benchmarks automate the attacks on watermarked images. We currently implement these attacks:
 
-    * Add 20% of contrast
-    * Unsharp mask (a technique to increase sharpness in images).
-    * Mode Filter (a type of low-pass filter).
-    * Median Filter (a type of low-pass filter).
-    * Rotate 3 degrees counterclockwise.
-    * Add noise.
-    * Add gausian blur.
-    * Use JPEG compression with 10% quality.
-    * Draw white squares at the middle of the image (sizes: 5%, 15% and 30%).
-    * Double the size of the image, then reduce to half again.
-    * Reduce the size of the image to half, then double the size.
+* Add 20% of contrast
+* Unsharp mask (a technique to increase sharpness in images).
+* Mode Filter (a type of low-pass filter).
+* Median Filter (a type of low-pass filter).
+* Rotate 3 degrees counterclockwise.
+* Add noise.
+* Add gausian blur.
+* Use JPEG compression with 10% quality.
+* Draw white squares at the middle of the image (sizes: 5%, 15% and 30%).
+* Double the size of the image, then reduce to half again.
+* Reduce the size of the image to half, then double the size.
 
 To run the benchmarks, issue the following command:
 
 ```python run.py benchmarks -a <algorithm> <original_image> <watermark>```
 
-The <algorithm> parameter refers to one of the algorithms that is implemented, the <original_image> parameter
-to the path of the original image. The <watermark> is only used in DWT algorithm in the current version and is
+The ``<algorithm>`` parameter refers to one of the algorithms that is implemented, the ``<original_image>`` parameter
+to the path of the original image. The ``<watermark>`` is only used in DWT algorithm in the current version and is
 the path of the watermark image.
 We currently do not support automatic benchmarks for the recover algorithm.
 
 Examples:
 
 ```python run.py benchmarks -a cox img/lena.png```
+
 ```python run.py benchmarks -a dwt img/lena.png img/milk.png```
 
