@@ -17,10 +17,10 @@ class Recover(Algorithm):
 
     def embed_specific(self, image, image_file, watermark=None):
 
-        r,g,b = self.split_image(image)
+        r, g, b = self.split_image(image)
 
         # Divide the image into non-overlapping blocks of 4X4 pixels
-        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
+        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r, g, b, self.NUM)
 
         # Randomly pick a prime number k E [1, N - 1]
         k = self.get_k(self.N)
@@ -35,19 +35,17 @@ class Recover(Algorithm):
         cor = {}
         
         for v in r_matrix:
-            cor[v] = (k*(v+1))%self.N#((k*(v+1))%self.N)+1
+            cor[v] = (k*(v+1))%self.N
+
         # Block watermark embedding
 
         new_r_matrix = {}
         new_g_matrix = {}
         new_b_matrix = {}
 
-
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
                 self.divide_in_blocks(r_matrix[k], g_matrix[k], b_matrix[k], 2)
-
-
 
         # Sub-block watermark generation and embedding algorithm
         # Set the two LSBs of each pixel within the block to zero
@@ -59,7 +57,6 @@ class Recover(Algorithm):
                         new_r_matrix[k][j][(x,y)] = self.change_lsb(new_r_matrix[k][j][(x,y)], 2, 0)
                         new_g_matrix[k][j][(x,y)] = self.change_lsb(new_g_matrix[k][j][(x,y)], 2, 0)
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
-
 
         # Compute the average intensity of the block and each
         # of its four sub-blocks, denoted by avg_{r,g,b}(calculated before) and avg_{r,g,b}' ,respectively.
@@ -108,7 +105,6 @@ class Recover(Algorithm):
                 num = self.count_bit_msb(b_avg[Bk][Bs], 6, 1)
                 b_p[Bk][Bs] = 1 if num%2 == 1 else 0
 
-
         A = cor[0]
         B = cor[A]
         while True:
@@ -137,8 +133,7 @@ class Recover(Algorithm):
 
         for x in range(len(matrix)):
             for y in range(len(matrix[0])):
-                self.embed_pixel_lsb(matrix, (x,y) ,vpr[y+(x*len(matrix))]+vpr[y+(x*len(matrix))+4])
-
+                self.embed_pixel_lsb(matrix, (x, y), vpr[y+(x*len(matrix))] + vpr[y+(x*len(matrix))+4])
 
     def embed_pixel_lsb(self, matrix, i, to_emb):
         snum = "{0:b}".format(matrix[i])
@@ -181,7 +176,6 @@ class Recover(Algorithm):
         b = BitArray(bin=snum)
         return b.uint
 
-
     def is_prime(self, a):
         return all(a % i for i in xrange(2, a))
 
@@ -214,7 +208,7 @@ class Recover(Algorithm):
         import numpy
         erroneous, _, _ = self.tamper_detection_level_1(numpy.array(image), watermark)
 
-        r,g,b = self.split_image(image)
+        r, g, b = self.split_image(image)
 
         # Divide the image into non-overlapping blocks of 4X4 pixels
         blocks = self.divide_in_blocks(r,g,b, self.NUM)
@@ -243,7 +237,8 @@ class Recover(Algorithm):
             if b_erroneous[bblock] is True:
                 erroneous_blocks.add(bblock[0])
 
-        while True:
+        # TODO
+        """while True:
             list = set()
             for k in erroneous_blocks:
                 for x in neighbors(k,Max):
@@ -256,7 +251,7 @@ class Recover(Algorithm):
             tmp = erroneous_blocks.copy()
             erroneous_blocks.union(list)
             if tmp == erroneous_blocks:
-                break
+                break"""
 
         k = -1
         with open(Algorithm().get_image_output_file(watermark)) as fd:
@@ -337,7 +332,6 @@ class Recover(Algorithm):
         _, filename = os.path.split(filename)
         return self.get_image_output_file(_+"recovered-"+filename.split('.')[0]+".png")
 
-
     def get_bit_value(self, value, bit):
         snum = "{0:b}".format(value)
         if len(snum) <= bit:
@@ -345,21 +339,18 @@ class Recover(Algorithm):
         else:
             return int(snum[-1-bit])
 
-
     def tamper_detection_level_1(self, image, image_file):
-
 
         r,g,b = self.split_image(image)
 
         # Divide the image into non-overlapping blocks of 4X4 pixels
-        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r,g,b, self.NUM)
+        r_matrix, g_matrix, b_matrix = self.divide_in_blocks(r, g, b, self.NUM)
 
         # Block watermark embedding
 
         new_r_matrix = {}
         new_g_matrix = {}
         new_b_matrix = {}
-
 
         for k in r_matrix:
             new_r_matrix[k],new_g_matrix[k],new_b_matrix[k] = \
@@ -379,7 +370,6 @@ class Recover(Algorithm):
                 g_aux[(a, b)] = False
                 b_aux[(a, b)] = False
 
-
         # Sub-block watermark generation and embedding algorithm
         # Set the two LSBs of each pixel within the block to zero
 
@@ -390,7 +380,6 @@ class Recover(Algorithm):
                         new_r_matrix[k][j][(x,y)] = self.change_lsb(new_r_matrix[k][j][(x,y)], 2, 0)
                         new_g_matrix[k][j][(x,y)] = self.change_lsb(new_g_matrix[k][j][(x,y)], 2, 0)
                         new_b_matrix[k][j][(x,y)] = self.change_lsb(new_b_matrix[k][j][(x,y)], 2, 0)
-
 
         # Compute the average intensity of the block and each
         # of its four sub-blocks, denoted by avg_{r,g,b}(calculated before) and avg_{r,g,b}' ,respectively.
@@ -438,7 +427,6 @@ class Recover(Algorithm):
                 g_p[Bk][Bs] = 1 if num%2 == 1 else 0
                 num = self.count_bit_msb(b_avg[Bk][Bs], 6, 1)
                 b_p[Bk][Bs] = 1 if num%2 == 1 else 0
-
 
         for k in p_r:
             if p_r[k] != r_p[k[0]][k[1]]:

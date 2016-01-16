@@ -1,4 +1,3 @@
-import scipy
 from scipy.stats import stats
 from scipy.fftpack import dct, idct
 import math
@@ -51,4 +50,4 @@ class Metrics(object):
 
     @classmethod
     def gamma(cls, w, o):
-        return abs(stats.pearsonr(w,o)[0])
+        return abs(stats.pearsonr(w, o)[0])
