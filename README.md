@@ -2,7 +2,7 @@
 
 The goal of this tool is to provide watermark services to owners of copyrighted artwork to prevent tampering and
 edition without detection.
-The tool started as a project of the Forensic Cybersecurity course at Instituto Superior Técnico, and now we are
+The tool started as a project of the Forensics Cyber-Security course at Instituto Superior Técnico, and now we are
 open source it.
 
 
@@ -12,7 +12,7 @@ Future work
 * Major code refactoring to add a more permanent structure to the code.
 * Implement test-first development.
 * Write complete documentation.
-* Tweak the implemented algorithms to erase some of the restrictions we have currently.
+* Tweak the implemented algorithms to erase some of the restrictions that we currently have.
 * Develop an user interface.
 
 
@@ -34,9 +34,9 @@ The template to perform an operation is the following:
 
 ```python run.py <operation> -a <algorithm> <image_file> <watermark>```
 
-where the ```<watermark>`` parameter is optional depending on the algorithm and operation.
+where the ``<watermark>`` parameter is optional depending on the algorithm and operation.
 
-The operations available are:`
+The operations available are:
 
 * ``<operation> = embed``: Embed a watermark
 
@@ -64,6 +64,7 @@ The operations available are:`
 
 
 * ``<operation> = benchmarks``: Run the benchmarks
+
 See next section.
 
 Benchmarks

@@ -31,7 +31,7 @@ class Algorithm(object):
 
     def open_image(self, file):
         img_obj = Image.open(file)
-        img_obj = img_obj.convert("RGB")
+        img_obj = img_obj.convert("RGB")  # images with transparency will be converted to RGB.
         return numpy.array(img_obj)
 
     def get_image_output_file(self, image_file):
@@ -52,11 +52,8 @@ class Algorithm(object):
 
         # color values range from 0 and 255 and must be integer
 
-
-
         changed_image = changed_image.clip(0, 255)
         changed_image = changed_image.astype('uint8')
-
 
         img = Image.fromarray(changed_image)
 

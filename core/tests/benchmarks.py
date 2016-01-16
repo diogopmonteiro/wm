@@ -53,6 +53,9 @@ class BenchmarkResults(object):
         return char * ((length - len(string))/2)
 
     def dump(self):
+        """
+            Prints benchmarks results to stdout.
+        """
         s = "+%s%s%s+" % \
               (self.get_char_to_center("-", self.HORIZONTAL_LENGTH_CHARS, self.algorithm_name),
                self.algorithm_name,
@@ -193,18 +196,22 @@ class Benchmarks(object):
             self.load_img_files()
 
     def load_img_files(self):
+        """
+            Load all image paths in the images directory to memory.
+        """
         self.images = [os.path.join(IMAGE_DIRECTORY,f)
                        for f in os.listdir(IMAGE_DIRECTORY)
                        if os.path.isfile(os.path.join(IMAGE_DIRECTORY, f))]
 
     def run(self):
-        for image in self.images:
-            if not os.path.exists(WM_DIRECTORY):
-                os.mkdir(WM_DIRECTORY)
+        # Create watermark directory and algorithm directory in case they don't still exist
+        if not os.path.exists(WM_DIRECTORY):
+            os.mkdir(WM_DIRECTORY)
+        path = os.path.join(WM_DIRECTORY, self.algorithm.get_algorithm_name())
+        if not os.path.exists(path):
+            os.mkdir(path)
 
-            path = os.path.join(WM_DIRECTORY, self.algorithm.get_algorithm_name())
-            if not os.path.exists(path):
-                os.mkdir(path)
+        for image in self.images:
             path = os.path.join(path, os.path.split(image)[1] + "-benchmarks")
             if not os.path.exists(path):
                 os.mkdir(path)
@@ -212,10 +219,14 @@ class Benchmarks(object):
             start = time.clock()
             iw, psnr = self.algorithm.embed(image, self.watermark_file)
             t = (time.clock() - start)
+
             self.results.init_benchmarks(image, t, psnr)
+
+            # Apply attacks
             for attack in self.attack_modifiers:
                 attacked = attack(Image.fromarray(iw))
                 attacked.save(os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
+
                 start = time.clock()
                 if self.algorithm.get_algorithm_name() == "Cox":
                     wmark, gamma = self.algorithm.extract_specific(attacked, self.algorithm.get_watermark_name(image))
