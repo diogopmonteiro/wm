@@ -29,30 +29,39 @@ Make sure you have the virtual environment activated before issuing any command,
 
 Operations
 ----------
-    The template to perform an operation is the following:
-    ```python run.py <operation> -a <algorithm> <image_file> <watermark>```
 
-    where the <watermark> parameter is optional depending on the algorithm and operation.
+The template to perform an operation is the following:
 
-    The operations available are:
-    * **<operation> = embed**: Embed a watermark
+```python run.py <operation> -a <algorithm> <image_file> <watermark>```
 
-        * ```python run.py embed -a cox img/lena.png```
+where the ```<watermark>`` parameter is optional depending on the algorithm and operation.
 
-        * ```python run.py embed -a dwt img/lena.png img/milk.png```
+The operations available are:`
 
-        * ```python run.py embed -a recover img/lena.png```
+* ``<operation> = embed``: Embed a watermark
 
-    * **<operation> = extract**: Extract a watermark
+    ```python run.py embed -a cox img/lena.png```
 
-        ```python run.py extract -a cox wm-img/lena.png wm-img/lena_wm.json```
+    ```python run.py embed -a dwt img/lena.png img/milk.png```
 
-        ```python run.py extract -a dwt wm-img/lena.png```
+    ```python run.py embed -a recover img/lena.png```
 
-        ```python run.py extract -a recover wm-img/lena.png wm-img/lena_k```
+* ``<operation> = extract``: Extract a watermark
 
-    * *<operation> = benchmarks**: Run the benchmarks
-    See next section.
+    ```python run.py extract -a cox wm-img/lena.png wm-img/lena_wm.json```
+    where ```wm-img/lena.png``` is the watermarked image and ``wm-img/lena_wm.json`` is the
+    watermark file produced by embed operation.
+
+    ```python run.py extract -a dwt wm-img/lena.png```
+    where ```wm-img/lena.png``` is the watermarked image
+    
+    ```python run.py extract -a recover wm-img/lena.png wm-img/lena_k```
+    where ```wm-img/lena.png``` is the watermarked image and ```wm-img/lena_k``` is a file that contains the key to 
+    build the sequence of blocks used in the embed phase of the recovery algorithm.
+
+
+* ``<operation> = benchmarks``: Run the benchmarks
+See next section.
 
 Benchmarks
 ----------
