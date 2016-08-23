@@ -77,37 +77,50 @@ class BenchmarkResults(object):
             print tabulate.tabulate(table, tablefmt="grid")
 
 
+def attackmethod(func):
+    """
+    Add this decorator to a function that implements an attack to an image
+    """
+    func.is_attack = True
+    return func
 
 
 class Benchmarks(object):
 
     @staticmethod
+    @attackmethod
     def no_attack(image):
         return image
 
     DWT_DEFAULT_WM = ""
 
     @staticmethod
+    @attackmethod
     def add_contrast(image):
         return ImageEnhance.Contrast(image).enhance(1.2)
 
     @staticmethod
+    @attackmethod
     def unsharp_mask(image):
         return image.filter(ImageFilter.UnsharpMask)
 
     @staticmethod
+    @attackmethod
     def mode_filter(image):
         return image.filter(ImageFilter.ModeFilter)
 
     @staticmethod
+    @attackmethod
     def rotate(image, rotation_degree=3):
         return image.rotate(rotation_degree)
 
     @staticmethod
+    @attackmethod
     def median_filter(image):
         return image.filter(ImageFilter.MedianFilter)
 
     @staticmethod
+    @attackmethod
     def noise(image, noise_level=20):
         def noise_map(i):
             noise = random.randint(0, noise_level) - noise_level / 2
@@ -118,10 +131,12 @@ class Benchmarks(object):
         return Image.fromarray(result)
 
     @staticmethod
+    @attackmethod
     def blur(image):
         return image.filter(ImageFilter.GaussianBlur(radius=5))
 
     @staticmethod
+    @attackmethod
     def jpeg_compression(image, quality=10):
         import StringIO
         buffer = StringIO.StringIO()
@@ -143,18 +158,22 @@ class Benchmarks(object):
         return image
 
     @staticmethod
+    @attackmethod
     def crop_picture_small(image):
         return Benchmarks.crop_general(image, 0.05)
 
     @staticmethod
+    @attackmethod
     def crop_picture_middle(image):
         return Benchmarks.crop_general(image, 0.15)
 
     @staticmethod
+    @attackmethod
     def crop_picture_big(image):
         return Benchmarks.crop_general(image, 0.3)
 
     @staticmethod
+    @attackmethod
     def size_up_down(image):
         w_ori, h_ori = image.size
         w_new, h_new = int(w_ori*1.5), int(h_ori*1.5)
@@ -162,32 +181,28 @@ class Benchmarks(object):
         return im.resize((w_ori, h_ori))
 
     @staticmethod
+    @attackmethod
     def size_down_up(image):
         w_ori, h_ori = image.size
         w_new, h_new = int(w_ori*0.75), int(h_ori*0.75)
         im = image.resize((w_new, h_new))
         return im.resize((w_ori, h_ori))
 
+    def load_attack_modifiers(self):
+        import types
+        results = list()
+        for attr in Benchmarks.__dict__:
+            obj_attr = getattr(Benchmarks, attr)
+
+            if isinstance(obj_attr, types.FunctionType) and hasattr(obj_attr, 'is_attack'):
+                results.append(obj_attr)
+        return results
+
     def __init__(self, algorithm, image, watermark_file):
         self.algorithm = Algorithm.get_instance(algorithm)
         self.results = BenchmarkResults(self.algorithm.get_algorithm_name())
         self.watermark_file = watermark_file
-        self.attack_modifiers = [
-            Benchmarks.no_attack,
-            Benchmarks.blur,
-            Benchmarks.jpeg_compression,
-            Benchmarks.noise,
-            Benchmarks.rotate,
-            Benchmarks.median_filter,
-            Benchmarks.mode_filter,
-            Benchmarks.unsharp_mask,
-            Benchmarks.add_contrast,
-            Benchmarks.crop_picture_small,
-            Benchmarks.crop_picture_middle,
-            Benchmarks.crop_picture_big,
-            Benchmarks.size_down_up,
-            Benchmarks.size_up_down
-        ]
+        self.attack_modifiers = self.load_attack_modifiers()
 
         self.images = []
         if image is not None:
