@@ -240,19 +240,13 @@ class Benchmarks(object):
             # Apply attacks
             for attack in self.attack_modifiers:
                 attacked = attack(Image.fromarray(iw))
-                attacked.save(os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
+                attacked_path = os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1])
+                attacked.save(attacked_path)
 
                 start = time.clock()
-                if self.algorithm.get_algorithm_name() == "Cox":
-                    wmark, gamma = self.algorithm.extract_specific(attacked, self.algorithm.get_watermark_name(image))
-                elif self.algorithm.get_algorithm_name() == "DWT":
-                    wmark, gamma = self.algorithm.extract_specific(numpy.array(Image.open(image)),
-                                                          os.path.join(path, attack.__name__ + "-" + os.path.split(image)[1]))
-                    wmark = wmark.clip(0,255)
-                    wmark = wmark.astype('uint8')
-                    gamma = Metrics.gamma(wmark.ravel(), numpy.array(Image.open(self.watermark_file)).ravel())
-                    wmark = Image.fromarray(wmark)
-                    wmark.save(os.path.join(path, attack.__name__ + "-extracted-wm-" + os.path.split(image)[1]))
+
+                wmark, gamma = self.algorithm.benchmark_extract_step(path, image, attack.__name__,
+                                                                     attacked, attacked_path, self.watermark_file)
 
                 t = (time.clock() - start)
                 self.results.add_attack_result(self.algorithm.get_algorithm_name(), image, attack.__name__, t, gamma)

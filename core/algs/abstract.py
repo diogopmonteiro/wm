@@ -89,6 +89,9 @@ class Algorithm(object):
     def get_watermark_name(self, filename):
         raise NotImplementedError("You must subclass this and implement the extract mechanism per algorithm")
 
+    def benchmark_extract_step(self, path, image, attack_name, attacked, attacked_path, watermark_file):
+        raise NotImplementedError("You must subclass this and implement the extract mechanism per algorithm")
+
     def get_algorithm_name(self):
         return self.__class__.__name__
 

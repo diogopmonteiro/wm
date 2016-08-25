@@ -1,3 +1,4 @@
+from PIL import Image
 from core.management.wm import WmError
 import os
 import numpy
@@ -99,6 +100,17 @@ class DWT(Algorithm):
     def get_watermark_name(self, filename):
         _, filename = os.path.split(filename)
         return self.get_image_output_file(_+"watermark-"+filename.split('.')[0]+".png")
+
+
+    def benchmark_extract_step(self, path, image, attack_name, attacked, attacked_path, watermark_file):
+        wmark, gamma = self.extract_specific(numpy.array(Image.open(image)),
+                                                          attacked_path)
+        wmark = wmark.clip(0,255)
+        wmark = wmark.astype('uint8')
+        gamma = Metrics.gamma(wmark.ravel(), numpy.array(Image.open(watermark_file)).ravel())
+        wmark = Image.fromarray(wmark)
+        wmark.save(os.path.join(path, attack_name + "-extracted-wm-" + os.path.split(image)[1]))
+        return wmark, gamma
 
 
 

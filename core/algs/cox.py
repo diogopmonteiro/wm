@@ -76,3 +76,6 @@ class Cox(Algorithm):
         filename = os.path.basename(filename)
         without_extension = os.path.splitext(filename)[0]
         return os.path.join(PROJECT_CODE_DIRECTORY, 'wm-img', without_extension + '_wm.json')
+
+    def benchmark_extract_step(self, path, image, attack_name, attacked, attacked_path, watermark_file):
+        return self.extract_specific(attacked, self.get_watermark_name(image))
